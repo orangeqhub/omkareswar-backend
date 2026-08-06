@@ -1,0 +1,49 @@
+'use strict';
+const crypto = require('crypto');
+
+const CATEGORIES = [
+  { slug: 'residential-plots', ruleKey: 'residentialPlot', nameEn: 'Residential Plots', nameTe: 'నివాస స్థలాలు' },
+  { slug: 'open-plots', ruleKey: 'openPlot', nameEn: 'Open Plots', nameTe: 'ఖాళీ స్థలాలు' },
+  { slug: 'commercial-plots', ruleKey: 'commercialPlot', nameEn: 'Commercial Plots', nameTe: 'వాణిజ్య స్థలాలు' },
+  { slug: 'apartments', ruleKey: 'apartment', nameEn: 'Apartments', nameTe: 'అపార్ట్‌మెంట్లు' },
+  { slug: 'independent-houses', ruleKey: 'independentHouse', nameEn: 'Independent Houses', nameTe: 'స్వతంత్ర గృహాలు' },
+  { slug: 'gated-communities', ruleKey: 'gatedCommunity', nameEn: 'Gated Communities', nameTe: 'గేటెడ్ కమ్యూనిటీలు' },
+  { slug: 'ventures', ruleKey: 'venture', nameEn: 'Ventures', nameTe: 'వెంచర్లు' },
+  { slug: 'agricultural-lands', ruleKey: 'agriculturalLand', nameEn: 'Agricultural Lands', nameTe: 'వ్యవసాయ భూములు' },
+  { slug: 'flats', ruleKey: 'apartment', nameEn: 'Flats', nameTe: 'ఫ్లాట్లు' },
+  { slug: 'villas', ruleKey: 'independentHouse', nameEn: 'Villas', nameTe: 'విల్లాలు' },
+  { slug: 'offices', ruleKey: 'commercialPlot', nameEn: 'Offices', nameTe: 'కార్యాలయాలు' },
+  { slug: 'shops', ruleKey: 'commercialPlot', nameEn: 'Shops', nameTe: 'దుకాణాలు' },
+  { slug: 'warehouses', ruleKey: 'commercialPlot', nameEn: 'Warehouses', nameTe: 'గోడౌన్లు' },
+  { slug: 'farm-lands', ruleKey: 'agriculturalLand', nameEn: 'Farm Lands', nameTe: 'వ్యవసాయ క్షేత్రాలు' },
+  { slug: 'commercial-buildings', ruleKey: 'commercialPlot', nameEn: 'Commercial Buildings', nameTe: 'వాణిజ్య భవనాలు' },
+];
+
+module.exports = {
+  up: async (queryInterface) => {
+    const [existing] = await queryInterface.sequelize.query('SELECT slug FROM categories');
+    const existingSlugs = new Set(existing.map((r) => r.slug));
+
+    const rows = CATEGORIES.filter((c) => !existingSlugs.has(c.slug)).map((c, index) => ({
+      id: crypto.randomUUID(),
+      slug: c.slug,
+      rule_key: c.ruleKey,
+      name_en: c.nameEn,
+      name_te: c.nameTe,
+      description_en: `Browse ${c.nameEn.toLowerCase()} listed on OMKARESWAR REALTORS.`,
+      transaction_types: JSON.stringify(['sale', 'resale', 'lease', 'rent']),
+      area_units: JSON.stringify(['sqft', 'sqyd', 'acre', 'cent']),
+      property_fields: JSON.stringify({}),
+      active: true,
+      visible: true,
+      order: index + 1,
+      created_at: new Date(),
+      updated_at: new Date(),
+    }));
+
+    if (rows.length) await queryInterface.bulkInsert('categories', rows);
+  },
+  down: async (queryInterface) => {
+    await queryInterface.bulkDelete('categories', { slug: CATEGORIES.map((c) => c.slug) });
+  },
+};

@@ -1,0 +1,89 @@
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
+
+const Property = sequelize.define(
+  'Property',
+  {
+    id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+    propertyCode: { type: DataTypes.STRING, unique: true }, // PROP-YYYY-000001
+    categorySlug: { type: DataTypes.STRING, allowNull: false },
+    ruleKey: { type: DataTypes.STRING },
+    titleEn: { type: DataTypes.STRING },
+    titleTe: { type: DataTypes.STRING },
+    descriptionEn: { type: DataTypes.TEXT },
+    descriptionTe: { type: DataTypes.TEXT },
+    transactionType: { type: DataTypes.STRING },
+    price: { type: DataTypes.DECIMAL(14, 2) },
+    priceNegotiable: { type: DataTypes.BOOLEAN, defaultValue: false },
+    area: { type: DataTypes.DECIMAL(14, 2) },
+    areaUnit: { type: DataTypes.STRING },
+    state: { type: DataTypes.STRING },
+    district: { type: DataTypes.STRING },
+    city: { type: DataTypes.STRING },
+    mandal: { type: DataTypes.STRING },
+    village: { type: DataTypes.STRING },
+    locality: { type: DataTypes.STRING },
+    landmark: { type: DataTypes.STRING },
+    pincode: { type: DataTypes.STRING },
+    address: { type: DataTypes.TEXT },
+    locationEn: { type: DataTypes.STRING },
+    locationTe: { type: DataTypes.STRING },
+    mapLat: { type: DataTypes.DECIMAL(10, 6) },
+    mapLng: { type: DataTypes.DECIMAL(10, 6) },
+    ventureName: { type: DataTypes.STRING },
+
+    structure: { type: DataTypes.JSONB, defaultValue: {} },
+    plotDetails: { type: DataTypes.JSONB, defaultValue: {} },
+    amenities: { type: DataTypes.JSONB, defaultValue: [] },
+
+    contactName: { type: DataTypes.STRING },
+    contactPhone: { type: DataTypes.STRING },
+    preferWhatsapp: { type: DataTypes.BOOLEAN, defaultValue: true },
+    preferCall: { type: DataTypes.BOOLEAN, defaultValue: true },
+    hidePhone: { type: DataTypes.BOOLEAN, defaultValue: false },
+
+    status: {
+      type: DataTypes.ENUM('draft', 'pending', 'active', 'rejected', 'changes_requested', 'sold', 'inactive'),
+      allowNull: false,
+      defaultValue: 'draft',
+    },
+    moderationStatus: {
+      type: DataTypes.ENUM(
+        'submitted',
+        'in_review',
+        'changes_requested',
+        'recommended_approval',
+        'recommended_rejection',
+        'completed'
+      ),
+      allowNull: true,
+    },
+    moderationNote: { type: DataTypes.TEXT },
+    verified: { type: DataTypes.BOOLEAN, defaultValue: false },
+    featured: { type: DataTypes.BOOLEAN, defaultValue: false },
+    views: { type: DataTypes.INTEGER, defaultValue: 0 },
+
+    sellerId: { type: DataTypes.UUID, allowNull: false },
+    assignedEmployeeId: { type: DataTypes.UUID, allowNull: true },
+    assignedMediatorId: { type: DataTypes.UUID, allowNull: true },
+    assignedBy: { type: DataTypes.UUID, allowNull: true },
+    assignedAt: { type: DataTypes.DATE },
+    priority: { type: DataTypes.STRING, defaultValue: 'medium' },
+    dueDate: { type: DataTypes.DATE },
+
+    postedDate: { type: DataTypes.DATE },
+    updatedDate: { type: DataTypes.DATE },
+  },
+  {
+    tableName: 'properties',
+    indexes: [
+      { fields: ['category_slug'] },
+      { fields: ['status'] },
+      { fields: ['seller_id'] },
+      { fields: ['city'] },
+      { fields: ['transaction_type'] },
+    ],
+  }
+);
+
+export default Property;

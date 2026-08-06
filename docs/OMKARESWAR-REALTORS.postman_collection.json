@@ -1,0 +1,4803 @@
+{
+  "info": {
+    "name": "OMKARESWAR REALTORS API",
+    "description": "Complete API collection for the OMKARESWAR REALTORS real-estate platform backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "employeeToken",
+      "value": ""
+    },
+    {
+      "key": "buyerToken",
+      "value": ""
+    },
+    {
+      "key": "sellerToken",
+      "value": ""
+    },
+    {
+      "key": "mediatorToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "propertyId",
+      "value": ""
+    },
+    {
+      "key": "enquiryId",
+      "value": ""
+    },
+    {
+      "key": "employeeId",
+      "value": ""
+    },
+    {
+      "key": "mediatorId",
+      "value": ""
+    },
+    {
+      "key": "buyerId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Request OTP (public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/otp/request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "otp",
+                "request"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"9000000004\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Verify OTP - public login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/otp/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "otp",
+                "verify"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"9000000004\",\n  \"otp\": \"1234\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Admin login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/admin/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "admin",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"loginId\": \"ADMIN001\",\n  \"password\": \"Admin@123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Employee login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/employee/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "employee",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"EMP-2026-0001\",\n  \"password\": \"Employee@123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get session (me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Refresh token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Registrations",
+      "item": [
+        {
+          "name": "Request registration OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/registrations/otp/request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "registrations",
+                "otp",
+                "request"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"9123456789\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Verify registration OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/registrations/otp/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "registrations",
+                "otp",
+                "verify"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobile\": \"9123456789\",\n  \"otp\": \"1234\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Submit registration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "registrations"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"buyer\",\n  \"name\": \"New Buyer\",\n  \"mobile\": \"9123456789\",\n  \"password\": \"Passw0rd!\",\n  \"district\": \"Hyderabad\",\n  \"city\": \"Hyderabad\",\n  \"address\": \"1-1-1 Test Colony\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get application status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/registrations/status?mobile=9123456789",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "registrations",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "mobile",
+                  "value": "9123456789"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List pending registrations (admin/employee)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/registrations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "registrations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Assign employee to registration",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/registrations/:id/assign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "registrations",
+                ":id",
+                "assign"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"{{employeeId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Approve registration",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/registrations/:id/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "registrations",
+                ":id",
+                "approve"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reject registration",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/registrations/:id/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "registrations",
+                ":id",
+                "reject"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Incomplete documents\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Request correction",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/registrations/:id/request-correction",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "registrations",
+                ":id",
+                "request-correction"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Please upload a clearer ID proof\",\n  \"fields\": [\n    \"idProof\"\n  ]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users & Employees",
+      "item": [
+        {
+          "name": "List users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users?role=buyer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "buyer"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get user by id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update user",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                ":id"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"city\": \"Warangal\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update user status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/:id/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                ":id",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"inactive\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "employees"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Employee\",\n  \"mobile\": \"9199999999\",\n  \"password\": \"Employee@123\",\n  \"email\": \"new.employee@example.com\",\n  \"city\": \"Hyderabad\",\n  \"permissions\": [\n    \"ENQUIRY_VIEW\",\n    \"ENQUIRY_UPDATE\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Update employee permissions",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/employees/:id/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "employees",
+                ":id",
+                "permissions"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissions\": [\n    \"ENQUIRY_VIEW\",\n    \"VISIT_VIEW\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Update employee status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/employees/:id/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "employees",
+                ":id",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"inactive\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign mediator to user",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users/:id/assign-mediator",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "users",
+                ":id",
+                "assign-mediator"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mediatorId\": \"{{mediatorId}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List public categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "categories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Category in-use check",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories/:slug/in-use",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "categories",
+                ":slug",
+                "in-use"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List all categories (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "categories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get category",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/categories/:slug",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "categories",
+                ":slug"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "categories"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slug\": \"test-category\",\n  \"ruleKey\": \"apartment\",\n  \"nameEn\": \"Test Category\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update category",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/categories/:slug",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "categories",
+                ":slug"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameEn\": \"Updated Name\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/categories/:slug",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "categories",
+                ":slug"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reorder category",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/categories/:slug/reorder",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "categories",
+                ":slug",
+                "reorder"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"direction\": \"up\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Media Rules",
+      "item": [
+        {
+          "name": "Get media rule by ruleKey",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/media-rules/:ruleKey",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "media-rules",
+                ":ruleKey"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List all media rules (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/media-rules",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "media-rules"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update media rule",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/media-rules/:ruleKey",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "media-rules",
+                ":ruleKey"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"countBasedSlots\": []\n}"
+            }
+          }
+        },
+        {
+          "name": "Restore defaults",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/media-rules/:ruleKey/restore-defaults",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "media-rules",
+                ":ruleKey",
+                "restore-defaults"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add common slot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/media-rules/:ruleKey/common-slots",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "media-rules",
+                ":ruleKey",
+                "common-slots"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slotKey\": \"customSlot\",\n  \"labelEn\": \"Custom Slot\",\n  \"required\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Update common slot",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/media-rules/:ruleKey/common-slots/:slotId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "media-rules",
+                ":ruleKey",
+                "common-slots",
+                ":slotId"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"required\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete common slot",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/media-rules/:ruleKey/common-slots/:slotId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "media-rules",
+                ":ruleKey",
+                "common-slots",
+                ":slotId"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add extra space",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/media-rules/:ruleKey/extra-spaces",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "media-rules",
+                ":ruleKey",
+                "extra-spaces"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"customSpace\",\n  \"labelEn\": \"Custom Space\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete extra space",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/media-rules/:ruleKey/extra-spaces/:key",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "media-rules",
+                ":ruleKey",
+                "extra-spaces",
+                ":key"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Properties",
+      "item": [
+        {
+          "name": "List properties (filters)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/properties?city=Hyderabad&sort=newest&page=1&pageSize=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "properties"
+              ],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "Hyderabad"
+                },
+                {
+                  "key": "sort",
+                  "value": "newest"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get property by id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/properties/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Featured properties",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/properties/featured?limit=8",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "featured"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "8"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Latest properties",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/properties/latest?limit=8",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "latest"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "8"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Related properties",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/properties/:id/related?limit=4",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                ":id",
+                "related"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "4"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Record property view",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/properties/:id/view",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                ":id",
+                "view"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Toggle favourite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/:userId/favourites/:propertyId/toggle",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                ":userId",
+                "favourites",
+                ":propertyId",
+                "toggle"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List favourites",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/:userId/favourites",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                ":userId",
+                "favourites"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List favourite ids",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/:userId/favourites/ids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                ":userId",
+                "favourites",
+                "ids"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create draft property",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/properties/drafts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "drafts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categorySlug\": \"apartments\",\n  \"titleEn\": \"New Draft Property\",\n  \"city\": \"Hyderabad\",\n  \"price\": 4500000\n}"
+            }
+          }
+        },
+        {
+          "name": "Update property",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/properties/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                ":id"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titleEn\": \"Updated Title\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Submit property for review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/properties/:id/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                ":id",
+                "submit"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Seller properties",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sellers/:sellerId/properties",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sellers",
+                ":sellerId",
+                "properties"
+              ]
+            }
+          }
+        },
+        {
+          "name": "My properties (seller)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/me/properties",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "me",
+                "properties"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mediator properties",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mediatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mediator/properties",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mediator",
+                "properties"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Employee properties",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/properties",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "properties"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin properties",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/properties",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "properties"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Moderate property (approve/reject/requestChanges)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/properties/:id/moderate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "properties",
+                ":id",
+                "moderate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"approve\",\n  \"note\": \"Looks good\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Approve property",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/properties/:id/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "properties",
+                ":id",
+                "approve"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reject property",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/properties/:id/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "properties",
+                ":id",
+                "reject"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Not enough info\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Request changes on property",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/properties/:id/request-changes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "properties",
+                ":id",
+                "request-changes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Please add more images\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign employee to property",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/properties/:id/assign-employee",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "properties",
+                ":id",
+                "assign-employee"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignedEmployeeId\": \"{{employeeId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign mediator to property",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/properties/:id/assign-mediator",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "properties",
+                ":id",
+                "assign-mediator"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignedMediatorId\": \"{{mediatorId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Feature property",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/properties/:id/feature",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "properties",
+                ":id",
+                "feature"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"featured\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Verify property",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/properties/:id/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "properties",
+                ":id",
+                "verify"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verified\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Mark property sold",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/properties/:id/mark-sold",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "properties",
+                ":id",
+                "mark-sold"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete property",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/properties/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Assign property (generic)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/properties/:id/assign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                ":id",
+                "assign"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignedEmployeeId\": \"{{employeeId}}\",\n  \"assignedMediatorId\": \"{{mediatorId}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employee Property Moderation",
+      "item": [
+        {
+          "name": "List assigned properties",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/property-moderation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "property-moderation"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get property moderation detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/property-moderation/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "property-moderation",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Start review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/property-moderation/:id/start",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "property-moderation",
+                ":id",
+                "start"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/property-moderation/:id/add-note",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "property-moderation",
+                ":id",
+                "add-note"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Checked documents\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Request changes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/property-moderation/:id/request-changes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "property-moderation",
+                ":id",
+                "request-changes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Missing layout plan\",\n  \"fields\": [\n    \"plotDetails\"\n  ],\n  \"slots\": [\n    \"layoutPlan\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Recommend approval",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/property-moderation/:id/recommend-approval",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "property-moderation",
+                ":id",
+                "recommend-approval"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Recommend rejection",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/property-moderation/:id/recommend-rejection",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "property-moderation",
+                ":id",
+                "recommend-rejection"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete moderation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/property-moderation/:id/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "property-moderation",
+                ":id",
+                "complete"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employee User Verification",
+      "item": [
+        {
+          "name": "List assigned users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/user-verification",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "user-verification"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get user verification detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/user-verification/:userId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "user-verification",
+                ":userId"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Start review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/user-verification/:userId/start-review",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "user-verification",
+                ":userId",
+                "start-review"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Correction request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/user-verification/:userId/correction-request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "user-verification",
+                ":userId",
+                "correction-request"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"ID proof unclear\",\n  \"fields\": [\n    \"idProof\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Recommend approval",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/user-verification/:userId/recommend-approval",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "user-verification",
+                ":userId",
+                "recommend-approval"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Recommend rejection",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/user-verification/:userId/recommend-rejection",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "user-verification",
+                ":userId",
+                "recommend-rejection"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/user-verification/:userId/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "user-verification",
+                ":userId",
+                "complete"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Enquiries & Call Notes",
+      "item": [
+        {
+          "name": "Create enquiry (public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/enquiries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "enquiries"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"buyerName\": \"Interested Buyer\",\n  \"buyerPhone\": \"9123450000\",\n  \"message\": \"Please call me\",\n  \"channel\": \"whatsapp\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Seller enquiries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sellers/:sellerId/enquiries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sellers",
+                ":sellerId",
+                "enquiries"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin enquiries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/enquiries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "enquiries"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Employee enquiries",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/enquiries",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "enquiries"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buyer enquiries by phone",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/buyers/enquiries?phone=9123450000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "buyers",
+                "enquiries"
+              ],
+              "query": [
+                {
+                  "key": "phone",
+                  "value": "9123450000"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get enquiry",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/enquiries/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "enquiries",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update enquiry status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/enquiries/:id/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "enquiries",
+                ":id",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"contacted\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update enquiry priority",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/enquiries/:id/priority",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "enquiries",
+                ":id",
+                "priority"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"priority\": \"high\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update next follow-up",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/enquiries/:id/next-follow-up",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "enquiries",
+                ":id",
+                "next-follow-up"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nextFollowUpAt\": \"2026-08-10T10:00:00.000Z\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Complete enquiry",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/enquiries/:id/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "enquiries",
+                ":id",
+                "complete"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Assign employee to enquiry",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/enquiries/:id/assign-employee",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "enquiries",
+                ":id",
+                "assign-employee"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"{{employeeId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign mediator to enquiry",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/enquiries/:id/assign-mediator",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "enquiries",
+                ":id",
+                "assign-mediator"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mediatorId\": \"{{mediatorId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List call notes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/enquiries/:id/call-notes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "enquiries",
+                ":id",
+                "call-notes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add call note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/enquiries/:id/call-notes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "enquiries",
+                ":id",
+                "call-notes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"callDateTime\": \"2026-08-02T10:00:00.000Z\",\n  \"direction\": \"outgoing\",\n  \"result\": \"Interested\",\n  \"summary\": \"Discussed pricing\",\n  \"interestLevel\": \"high\",\n  \"nextAction\": \"Schedule visit\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update call note",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/call-notes/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "call-notes",
+                ":id"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"summary\": \"Updated summary\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete call note",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/call-notes/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "call-notes",
+                ":id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Visits",
+      "item": [
+        {
+          "name": "Schedule visit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/visits",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "visits"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\",\n  \"buyerId\": \"{{buyerId}}\",\n  \"buyerName\": \"Anita Reddy\",\n  \"scheduledFor\": \"2026-08-15T10:00:00.000Z\",\n  \"meetingLocation\": \"Property site\"\n}"
+            }
+          }
+        },
+        {
+          "name": "My visits (buyer)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/me/visits",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "me",
+                "visits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Seller visits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/seller/visits",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "seller",
+                "visits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mediator visits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mediatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mediator/visits",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mediator",
+                "visits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Employee visits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/visits",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "visits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin visits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/visits",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "visits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Confirm visit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/visits/:id/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "visits",
+                ":id",
+                "confirm"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reschedule visit",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/visits/:id/reschedule",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "visits",
+                ":id",
+                "reschedule"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scheduledFor\": \"2026-08-16T10:00:00.000Z\",\n  \"note\": \"Buyer requested change\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Complete visit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/visits/:id/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "visits",
+                ":id",
+                "complete"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel visit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/visits/:id/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "visits",
+                ":id",
+                "cancel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Not available\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Mark visit no-show",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/visits/:id/no-show",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "visits",
+                ":id",
+                "no-show"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Buyer did not show up\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Add visit note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/visits/:id/add-note",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "visits",
+                ":id",
+                "add-note"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Called buyer to confirm\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Set visit outcome",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/visits/:id/outcome",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "visits",
+                ":id",
+                "outcome"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"outcome\": \"interested\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign visit",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/visits/:id/assign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "visits",
+                ":id",
+                "assign"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignedMediatorId\": \"{{mediatorId}}\",\n  \"assignedEmployeeId\": \"{{employeeId}}\",\n  \"assignmentNote\": \"Please handle\",\n  \"assignmentDueAt\": \"2026-08-14T00:00:00.000Z\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Follow Ups",
+      "item": [
+        {
+          "name": "Create follow-up",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/follow-ups",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "follow-ups"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recordType\": \"enquiry\",\n  \"recordId\": \"{{enquiryId}}\",\n  \"assignedEmployeeId\": \"{{employeeId}}\",\n  \"dueDate\": \"2026-08-10\",\n  \"dueTime\": \"11:00\",\n  \"priority\": \"high\",\n  \"reason\": \"Call buyer\",\n  \"nextAction\": \"Call buyer\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Employee follow-ups",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/follow-ups",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "follow-ups"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin follow-ups",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/follow-ups",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "follow-ups"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Start follow-up",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/follow-ups/:id/start",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "follow-ups",
+                ":id",
+                "start"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reschedule follow-up",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/follow-ups/:id/reschedule",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "follow-ups",
+                ":id",
+                "reschedule"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dueDate\": \"2026-08-12\",\n  \"dueTime\": \"15:00\",\n  \"note\": \"Buyer asked to reschedule\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Complete follow-up",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/follow-ups/:id/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "follow-ups",
+                ":id",
+                "complete"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completionNote\": \"Buyer confirmed visit\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Cancel follow-up",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/follow-ups/:id/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "follow-ups",
+                ":id",
+                "cancel"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"No longer needed\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Add follow-up note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/follow-ups/:id/add-note",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "follow-ups",
+                ":id",
+                "add-note"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Left voicemail\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Admin assign follow-up",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/follow-ups/:id/assign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "follow-ups",
+                ":id",
+                "assign"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignedEmployeeId\": \"{{employeeId}}\",\n  \"assignmentNote\": \"Reassigning\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Favourites & Saved Searches",
+      "item": [
+        {
+          "name": "List my favourites",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/favourites",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "favourites"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add favourite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/favourites",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "favourites"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propertyId\": \"{{propertyId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Remove favourite",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/favourites/:propertyId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "favourites",
+                ":propertyId"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List saved searches",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/saved-searches",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "saved-searches"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create saved search",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/saved-searches",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "saved-searches"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Hyderabad Apartments under 80L\",\n  \"city\": \"Hyderabad\",\n  \"categorySlug\": \"apartments\",\n  \"maxPrice\": 8000000\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete saved search",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/saved-searches/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "saved-searches",
+                ":id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "My notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark notification read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/:id/read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                ":id",
+                "read"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark all notifications read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/read-all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "read-all"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Internal Notes",
+      "item": [
+        {
+          "name": "List internal notes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/internal-notes?recordType=enquiry&recordId={{enquiryId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "internal-notes"
+              ],
+              "query": [
+                {
+                  "key": "recordType",
+                  "value": "enquiry"
+                },
+                {
+                  "key": "recordId",
+                  "value": "{{enquiryId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add internal note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/internal-notes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "internal-notes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recordType\": \"enquiry\",\n  \"recordId\": \"{{enquiryId}}\",\n  \"text\": \"Buyer seems serious, prioritize.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update internal note",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/internal-notes/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "internal-notes",
+                ":id"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Updated note text\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete internal note",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/internal-notes/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "internal-notes",
+                ":id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit Logs",
+      "item": [
+        {
+          "name": "List audit logs (admin only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/audit-logs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "audit-logs"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "CMS & Settings",
+      "item": [
+        {
+          "name": "Get CMS content",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cms",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cms"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update CMS content",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/cms",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "cms"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contactPhone\": \"+91 9000000099\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get app settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "settings"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update app settings",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "settings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"autoApproveProperties\": true\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Uploads",
+      "item": [
+        {
+          "name": "Upload profile image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/uploads/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "uploads",
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload identity proof",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/uploads/identity-proof",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "uploads",
+                "identity-proof"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload property image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/uploads/property-image",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "uploads",
+                "property-image"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload property document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/uploads/property-document",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "uploads",
+                "property-document"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload CMS image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/uploads/cms-image",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "uploads",
+                "cms-image"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete uploaded file",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/uploads/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "uploads",
+                ":id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports (Excel)",
+      "item": [
+        {
+          "name": "Users report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reports/users.xlsx",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reports",
+                "users.xlsx"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Properties report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reports/properties.xlsx",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reports",
+                "properties.xlsx"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Enquiries report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reports/enquiries.xlsx",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reports",
+                "enquiries.xlsx"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Visits report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reports/visits.xlsx",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reports",
+                "visits.xlsx"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Follow-ups report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reports/follow-ups.xlsx",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reports",
+                "follow-ups.xlsx"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Commissions report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reports/commissions.xlsx",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reports",
+                "commissions.xlsx"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboards",
+      "item": [
+        {
+          "name": "Admin dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Employee dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{employeeToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/employee/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "employee",
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Buyer dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/buyer/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "buyer",
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Seller dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sellerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/seller/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "seller",
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mediator dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{mediatorToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/mediator/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "mediator",
+                "dashboard"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
