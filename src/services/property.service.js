@@ -210,6 +210,13 @@ export async function createDraft(sellerId, data) {
       if (data[f] !== undefined) payload[f] = data[f];
     });
 
+    if (data.cityVillage !== undefined) payload.city = data.cityVillage;
+
+    const cityVal = payload.city || '';
+    const localityVal = payload.locality || '';
+    payload.locationEn = localityVal ? `${localityVal}, ${cityVal}` : cityVal;
+    payload.locationTe = localityVal ? `${localityVal}, ${cityVal}` : cityVal;
+
     const property = await Property.create(payload, { transaction: t });
     await syncImages(property.id, data.images, t);
     await syncDocuments(property.id, data.documents, t);
@@ -233,9 +240,17 @@ export async function updateProperty(id, data, actor) {
   assertOwnerOrStaff(property, actor);
 
   return sequelize.transaction(async (t) => {
+    if (data.cityVillage !== undefined) data.city = data.cityVillage;
+
     DRAFT_FIELDS.forEach((f) => {
       if (data[f] !== undefined) property[f] = data[f];
     });
+
+    const cityVal = property.city || '';
+    const localityVal = property.locality || '';
+    property.locationEn = localityVal ? `${localityVal}, ${cityVal}` : cityVal;
+    property.locationTe = localityVal ? `${localityVal}, ${cityVal}` : cityVal;
+
     property.updatedDate = new Date();
     await property.save({ transaction: t });
 
