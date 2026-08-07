@@ -249,25 +249,35 @@ export async function updateProperty(id, data, actor) {
 export async function submitProperty(id, actor) {
   const property = await Property.findByPk(id);
   if (!property) throw new AppError('Property not found', 404, 'NOT_FOUND');
-  if (property.sellerId !== actor.id) throw new AppError('You are not allowed to submit this property', 403, 'FORBIDDEN');
+  const isOwner = property.sellerId === actor.id;
+  const isStaff = [ROLES.ADMIN, ROLES.EMPLOYEE].includes(actor.role);
+  const isAssignedMediator = property.assignedMediatorId === actor.id;
+  if (!isOwner && !isStaff && !isAssignedMediator) {
+    throw new AppError('You are not allowed to submit this property', 403, 'FORBIDDEN');
+  }
 
   return sequelize.transaction(async (t) => {
-    property.status = 'pending';
-    property.moderationStatus = 'submitted';
+    const isAdmin = actor.role === ROLES.ADMIN;
+
+    property.status = isAdmin ? 'active' : 'pending';
+    property.moderationStatus = isAdmin ? 'completed' : 'submitted';
+    property.moderationNote = isAdmin ? 'Auto-approved by Admin' : null;
     property.postedDate = property.postedDate || new Date();
     await property.save({ transaction: t });
 
-    await createNotification(
-      {
-        audienceRole: ROLES.ADMIN,
-        type: 'property.submitted',
-        relatedType: 'property',
-        relatedId: property.id,
-        titleEn: `Property submitted for review: ${property.titleEn || property.propertyCode}`,
-        titleTe: `సమీక్ష కోసం ఆస్తి సమర్పించబడింది: ${property.titleEn || property.propertyCode}`,
-      },
-      t
-    );
+    if (!isAdmin) {
+      await createNotification(
+        {
+          audienceRole: ROLES.ADMIN,
+          type: 'property.submitted',
+          relatedType: 'property',
+          relatedId: property.id,
+          titleEn: `Property submitted for review: ${property.titleEn || property.propertyCode}`,
+          titleTe: `సమీక్ష కోసం ఆస్తి సమర్పించబడింది: ${property.titleEn || property.propertyCode}`,
+        },
+        t
+      );
+    }
 
     await auditLog('property.submit', actor, { propertyId: id }, t);
     return getPropertyById(id, t);
