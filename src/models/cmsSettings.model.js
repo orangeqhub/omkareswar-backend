@@ -19,7 +19,7 @@ const CmsSettings = sequelize.define(
     contactAddressTe: { type: DataTypes.TEXT },
     contactLandmarkEn: { type: DataTypes.STRING },
     contactLandmarkTe: { type: DataTypes.STRING },
-    contactMapUrl: { type: DataTypes.STRING },
+    contactMapUrl: { type: DataTypes.TEXT },
     businessHoursWeekdayEn: { type: DataTypes.STRING },
     businessHoursWeekdayTe: { type: DataTypes.STRING },
     businessHoursSundayEn: { type: DataTypes.STRING },
