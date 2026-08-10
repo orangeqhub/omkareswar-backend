@@ -40,7 +40,15 @@ export async function listProperties(query) {
   const { page, pageSize, limit, offset } = getPagination(query);
   const where = {};
 
-  if (query.categorySlug) where.categorySlug = query.categorySlug;
+  if (query.categorySlug) {
+    if (query.categorySlug === 'apartments') {
+      where.categorySlug = { [Op.in]: ['apartments', 'flats', 'gated-communities'] };
+    } else if (query.categorySlug === 'commercial-properties') {
+      where.categorySlug = { [Op.in]: ['commercial-properties', 'offices', 'shops', 'commercial-buildings'] };
+    } else {
+      where.categorySlug = query.categorySlug;
+    }
+  }
   if (query.city) where.city = query.city;
   if (query.transactionType) where.transactionType = query.transactionType;
   if (query.sellerId) where.sellerId = query.sellerId;
@@ -348,7 +356,15 @@ export async function listForAdmin(query) {
   const { page, pageSize, limit, offset } = getPagination(query);
   const where = {};
   if (query.status) where.status = query.status;
-  if (query.categorySlug) where.categorySlug = query.categorySlug;
+  if (query.categorySlug) {
+    if (query.categorySlug === 'apartments') {
+      where.categorySlug = { [Op.in]: ['apartments', 'flats', 'gated-communities'] };
+    } else if (query.categorySlug === 'commercial-properties') {
+      where.categorySlug = { [Op.in]: ['commercial-properties', 'offices', 'shops', 'commercial-buildings'] };
+    } else {
+      where.categorySlug = query.categorySlug;
+    }
+  }
 
   const { rows, count } = await Property.findAndCountAll({
     where,
