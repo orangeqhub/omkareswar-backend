@@ -22,47 +22,49 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // ---------------------------------------------------------------------------
 
 /**
- * Creates the default form configs (if the table is empty). Idempotent - safe
- * to call on every startup. Mirrors appSettings.service auto-seeding behaviour.
+ * Ensures every entry in DEFAULT_FORMS exists in the database. Fully idempotent
+ * and production-safe: uses findOrCreate so existing forms and their fields are
+ * never modified or deleted. Safe to call on every startup.
  */
 export async function ensureDefaultForms(transaction) {
-  const count = await RegistrationForm.count({ transaction });
-  if (count > 0) return { created: false, count };
+  let createdCount = 0;
 
-  const created = await sequelize.transaction(async (t) => {
+  const seeded = await sequelize.transaction(async (t) => {
     for (const def of DEFAULT_FORMS) {
-      const [form] = await RegistrationForm.findOrCreate({
+      const [form, formCreated] = await RegistrationForm.findOrCreate({
         where: { formType: def.formType },
         defaults: { formType: def.formType, name: def.name, description: def.description },
         transaction: t,
       });
+      if (formCreated) createdCount++;
 
-      const existing = await RegistrationField.count({ where: { registrationFormId: form.id }, transaction: t });
-      if (existing > 0) continue;
-
-      await RegistrationField.bulkCreate(
-        def.fields.map((f) => ({
-          registrationFormId: form.id,
-          fieldKey: f.fieldKey,
-          label: f.label,
-          fieldType: f.fieldType,
-          placeholder: f.placeholder || null,
-          helpText: f.helpText || null,
-          defaultValue: f.defaultValue ?? null,
-          validationRules: f.validation || {},
-          options: f.options || null,
-          isRequired: !!f.isRequired,
-          isActive: true,
-          isSystemField: SYSTEM_FIELD_KEYS.has(f.fieldKey),
-          displayOrder: f.displayOrder ?? 0,
-        })),
-        { transaction: t }
-      );
+      for (const f of def.fields) {
+        await RegistrationField.findOrCreate({
+          where: { registrationFormId: form.id, fieldKey: f.fieldKey },
+          defaults: {
+            registrationFormId: form.id,
+            fieldKey: f.fieldKey,
+            label: f.label,
+            fieldType: f.fieldType,
+            placeholder: f.placeholder || null,
+            helpText: f.helpText || null,
+            defaultValue: f.defaultValue ?? null,
+            validationRules: f.validation || {},
+            options: f.options || null,
+            isRequired: !!f.isRequired,
+            isActive: true,
+            isSystemField: SYSTEM_FIELD_KEYS.has(f.fieldKey),
+            displayOrder: f.displayOrder ?? 0,
+          },
+          transaction: t,
+        });
+      }
     }
     return true;
   });
 
-  return { created, count: created ? DEFAULT_FORMS.length : count };
+  const count = await RegistrationForm.count({ transaction });
+  return { created: seeded && createdCount > 0, count };
 }
 
 async function findFormOrCreate(formType) {
