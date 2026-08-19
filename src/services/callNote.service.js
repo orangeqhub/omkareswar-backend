@@ -1,14 +1,19 @@
 import { CallNote, Enquiry } from '../models/index.js';
 import AppError from '../utils/AppError.js';
+import { assertRecordAccess } from '../utils/recordAccess.js';
 import { log as auditLog } from './auditLog.service.js';
 
-export async function list(enquiryId) {
+export async function list(enquiryId, actor) {
+  const enquiry = await Enquiry.findByPk(enquiryId);
+  if (!enquiry) throw new AppError('Enquiry not found', 404, 'NOT_FOUND');
+  await assertRecordAccess(actor, enquiry, ['buyerId', 'sellerId']);
   return CallNote.findAll({ where: { enquiryId }, order: [['callDateTime', 'DESC']] });
 }
 
 export async function create(enquiryId, data, actor) {
   const enquiry = await Enquiry.findByPk(enquiryId);
   if (!enquiry) throw new AppError('Enquiry not found', 404, 'NOT_FOUND');
+  await assertRecordAccess(actor, enquiry, ['buyerId', 'sellerId']);
 
   const note = await CallNote.create({
     enquiryId,
@@ -34,6 +39,7 @@ export async function create(enquiryId, data, actor) {
 export async function update(id, data, actor) {
   const note = await CallNote.findByPk(id);
   if (!note) throw new AppError('Call note not found', 404, 'NOT_FOUND');
+  await assertEnquiryAccess(note.enquiryId, actor);
 
   const editable = ['callDateTime', 'direction', 'result', 'summary', 'interestLevel', 'nextAction', 'nextFollowUpAt'];
   editable.forEach((f) => {
@@ -47,8 +53,15 @@ export async function update(id, data, actor) {
 export async function remove(id, actor) {
   const note = await CallNote.findByPk(id);
   if (!note) throw new AppError('Call note not found', 404, 'NOT_FOUND');
+  await assertEnquiryAccess(note.enquiryId, actor);
 
   await note.destroy();
   await auditLog('callNote.delete', actor, { callNoteId: id });
   return true;
+}
+
+async function assertEnquiryAccess(enquiryId, actor) {
+  const enquiry = await Enquiry.findByPk(enquiryId);
+  if (!enquiry) throw new AppError('Enquiry not found', 404, 'NOT_FOUND');
+  await assertRecordAccess(actor, enquiry, ['buyerId', 'sellerId']);
 }

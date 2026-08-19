@@ -13,6 +13,7 @@ const router = Router();
 router.get('/', propertyController.list);
 router.get('/featured', propertyController.featured);
 router.get('/latest', propertyController.latest);
+router.get('/popular-locations', propertyController.popularLocations);
 router.post('/drafts', auth, requireRole(ROLES.SELLER, ROLES.BUYER, ROLES.MEDIATOR, ROLES.ADMIN, ROLES.EMPLOYEE), createDraftValidator, validate, propertyController.createDraft);
 router.get('/:id', idParamValidator, validate, propertyController.getOne);
 router.get('/:id/related', idParamValidator, validate, propertyController.related);

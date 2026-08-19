@@ -1,9 +1,9 @@
 import { Op } from 'sequelize';
 import { sequelize, Property, PropertyImage, PropertyDocument, PropertyModerationHistory } from '../models/index.js';
-import { PERMISSIONS } from '../constants/permissions.js';
 import { ROLES } from '../constants/roles.js';
 import AppError from '../utils/AppError.js';
 import { getPagination } from '../utils/pagination.js';
+import { buildRecordScope } from '../utils/recordAccess.js';
 import { createNotification } from './notification.service.js';
 import { log as auditLog } from './auditLog.service.js';
 
@@ -17,9 +17,7 @@ export async function listAssigned(employee, query) {
   const { page, pageSize, limit, offset } = getPagination(query);
   const where = { moderationStatus: { [Op.ne]: null } };
 
-  if (!(employee.permissions || []).includes(PERMISSIONS.VIEW_UNASSIGNED_RECORDS)) {
-    where.assignedEmployeeId = employee.id;
-  }
+  Object.assign(where, await buildRecordScope(employee, ['sellerId']));
   if (query.moderationStatus) where.moderationStatus = query.moderationStatus;
 
   const { rows, count } = await Property.findAndCountAll({
@@ -38,8 +36,16 @@ async function getPropertyOrThrow(id, transaction) {
   return property;
 }
 
-export async function getOne(id) {
-  return getPropertyOrThrow(id);
+async function assertPropertyAccess(actor, property) {
+  if (!actor || actor.role === ROLES.ADMIN) return;
+  if (actor.role === ROLES.EMPLOYEE && property.assignedEmployeeId === actor.id) return;
+  throw new AppError('Property not found', 404, 'NOT_FOUND');
+}
+
+export async function getOne(id, actor) {
+  const property = await getPropertyOrThrow(id);
+  await assertPropertyAccess(actor, property);
+  return property;
 }
 
 async function addHistory(propertyId, actorId, action, extra, transaction) {
@@ -51,6 +57,7 @@ async function addHistory(propertyId, actorId, action, extra, transaction) {
 
 export async function start(id, actor) {
   const property = await getPropertyOrThrow(id);
+  await assertPropertyAccess(actor, property);
   return sequelize.transaction(async (t) => {
     property.moderationStatus = 'in_review';
     await property.save({ transaction: t });
@@ -62,6 +69,7 @@ export async function start(id, actor) {
 
 export async function addNote(id, note, actor) {
   const property = await getPropertyOrThrow(id);
+  await assertPropertyAccess(actor, property);
   return sequelize.transaction(async (t) => {
     await addHistory(id, actor.id, 'add_note', { note, statusAfter: property.moderationStatus }, t);
     await auditLog('propertyModeration.addNote', actor, { propertyId: id }, t);
@@ -71,6 +79,7 @@ export async function addNote(id, note, actor) {
 
 export async function requestChanges(id, { reason, fields, slots }, actor) {
   const property = await getPropertyOrThrow(id);
+  await assertPropertyAccess(actor, property);
   return sequelize.transaction(async (t) => {
     property.moderationStatus = 'changes_requested';
     property.status = 'changes_requested';
@@ -109,6 +118,7 @@ export async function requestChanges(id, { reason, fields, slots }, actor) {
 
 async function recommend(id, status, action, actor) {
   const property = await getPropertyOrThrow(id);
+  await assertPropertyAccess(actor, property);
   return sequelize.transaction(async (t) => {
     property.moderationStatus = status;
     await property.save({ transaction: t });
@@ -136,6 +146,7 @@ export const recommendRejection = (id, actor) => recommend(id, 'recommended_reje
 
 export async function complete(id, actor) {
   const property = await getPropertyOrThrow(id);
+  await assertPropertyAccess(actor, property);
   return sequelize.transaction(async (t) => {
     property.moderationStatus = 'completed';
     await property.save({ transaction: t });

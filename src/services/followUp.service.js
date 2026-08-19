@@ -1,7 +1,7 @@
 import { sequelize, FollowUp, FollowUpHistory } from '../models/index.js';
-import { PERMISSIONS } from '../constants/permissions.js';
 import AppError from '../utils/AppError.js';
 import { getPagination } from '../utils/pagination.js';
+import { buildFollowUpScope, assertFollowUpAccess } from '../utils/recordAccess.js';
 import { createNotification } from './notification.service.js';
 import { log as auditLog } from './auditLog.service.js';
 
@@ -27,9 +27,7 @@ async function getOrThrow(id, transaction) {
 export async function listForEmployee(employee, query) {
   const { page, pageSize, limit, offset } = getPagination(query);
   const where = {};
-  if (!(employee.permissions || []).includes(PERMISSIONS.VIEW_UNASSIGNED_RECORDS)) {
-    where.assignedEmployeeId = employee.id;
-  }
+  Object.assign(where, await buildFollowUpScope(employee));
   if (query.status) where.status = query.status;
   if (query.recordType) where.recordType = query.recordType;
 
@@ -86,6 +84,7 @@ export async function create(data, actor) {
 
 export async function start(id, actor) {
   const followUp = await getOrThrow(id);
+  await assertFollowUpAccess(actor, followUp);
   return sequelize.transaction(async (t) => {
     followUp.status = 'in_progress';
     await followUp.save({ transaction: t });
@@ -97,6 +96,7 @@ export async function start(id, actor) {
 
 export async function reschedule(id, { dueDate, dueTime, note }, actor) {
   const followUp = await getOrThrow(id);
+  await assertFollowUpAccess(actor, followUp);
   return sequelize.transaction(async (t) => {
     followUp.dueDate = dueDate;
     followUp.dueTime = dueTime;
@@ -109,6 +109,7 @@ export async function reschedule(id, { dueDate, dueTime, note }, actor) {
 
 export async function complete(id, completionNote, actor) {
   const followUp = await getOrThrow(id);
+  await assertFollowUpAccess(actor, followUp);
   return sequelize.transaction(async (t) => {
     followUp.status = 'completed';
     followUp.completionNote = completionNote;
@@ -121,6 +122,7 @@ export async function complete(id, completionNote, actor) {
 
 export async function cancel(id, note, actor) {
   const followUp = await getOrThrow(id);
+  await assertFollowUpAccess(actor, followUp);
   return sequelize.transaction(async (t) => {
     followUp.status = 'cancelled';
     await followUp.save({ transaction: t });
@@ -132,6 +134,7 @@ export async function cancel(id, note, actor) {
 
 export async function addNote(id, note, actor) {
   const followUp = await getOrThrow(id);
+  await assertFollowUpAccess(actor, followUp);
   await addHistory(id, actor.id, 'note', note, followUp.status);
   await auditLog('followup.addNote', actor, { followUpId: id });
   return withOverdue(await getOrThrow(id));

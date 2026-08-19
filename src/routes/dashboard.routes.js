@@ -7,6 +7,7 @@ import { PERMISSIONS } from '../constants/permissions.js';
 
 export const adminRouter = Router();
 adminRouter.get('/', auth, requireRole(ROLES.ADMIN), controller.admin);
+adminRouter.get('/performance', auth, requireRole(ROLES.ADMIN), controller.performance);
 
 export const employeeRouter = Router();
 employeeRouter.get(

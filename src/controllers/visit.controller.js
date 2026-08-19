@@ -71,3 +71,13 @@ export const assign = asyncHandler(async (req, res) => {
   const data = await visitService.assign(req.params.id, req.body, req.user);
   sendSuccess(res, { message: 'Visit assigned', data });
 });
+
+export const approve = asyncHandler(async (req, res) => {
+  const data = await visitService.approveVisit(req.params.id, req.user);
+  sendSuccess(res, { message: 'Visit approved', data });
+});
+
+export const reject = asyncHandler(async (req, res) => {
+  const data = await visitService.rejectVisit(req.params.id, req.user, req.body.note);
+  sendSuccess(res, { message: 'Visit rejected', data });
+});

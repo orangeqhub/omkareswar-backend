@@ -8,6 +8,7 @@ import { PERMISSIONS } from '../constants/permissions.js';
 
 // Mounted at /api/admin/settings. Only admin may view/edit (ADMIN_SETTINGS_VIEW is never assignable to employees).
 const router = Router();
+router.get('/public', controller.getPublicSettings);
 router.get('/', auth, requireRole(ROLES.ADMIN), requirePermission(PERMISSIONS.ADMIN_SETTINGS_VIEW), controller.getSettings);
 router.patch('/', auth, requireRole(ROLES.ADMIN), controller.updateSettings);
 

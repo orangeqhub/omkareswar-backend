@@ -6,7 +6,7 @@ import AppError from '../utils/AppError.js';
 
 const UPLOAD_ROOT = path.resolve('uploads');
 
-const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
+const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.jfif', '.heic', '.heif', '.gif', '.svg'];
 const DOCUMENT_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png'];
 
 function storageFor(subfolder) {
@@ -33,7 +33,7 @@ function fileFilterFor(allowedExtensions) {
 }
 
 function maxSizeBytes() {
-  const mb = parseFloat(process.env.MAX_IMAGE_SIZE_MB || '5');
+  const mb = parseFloat(process.env.MAX_IMAGE_SIZE_MB || '30');
   return mb * 1024 * 1024;
 }
 

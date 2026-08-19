@@ -33,7 +33,7 @@ describe('Property draft + submit + filters + ownership', () => {
       .send({ categorySlug: 'apartments', titleEn: 'Test Draft Apartment', city: 'Hyderabad', price: 5000000 });
     expect(res.status).toBe(201);
     expect(res.body.data.status).toBe('draft');
-    expect(res.body.data.propertyCode).toMatch(/^PROP-\d{4}-\d{6}$/);
+    expect(res.body.data.propertyCode).toMatch(/^PROP-\d{4}-\d{4}$/);
     propertyId = res.body.data.id;
   });
 

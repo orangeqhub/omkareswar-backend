@@ -116,16 +116,22 @@ export async function refreshAccessToken(refreshToken) {
   return { user: toSafeUser(user), ...tokens };
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function resetEmployeePassword(employeeId, newPassword) {
+  const conditions = [
+    { memberId: employeeId },
+    { mobile: employeeId },
+    { email: employeeId },
+  ];
+  if (UUID_REGEX.test(employeeId)) {
+    conditions.push({ id: employeeId });
+  }
+
   const user = await User.findOne({
     where: {
       role: ROLES.EMPLOYEE,
-      [Op.or]: [
-        { id: employeeId },
-        { memberId: employeeId },
-        { mobile: employeeId },
-        { email: employeeId },
-      ],
+      [Op.or]: conditions,
     },
   });
 
@@ -139,16 +145,20 @@ export async function resetEmployeePassword(employeeId, newPassword) {
 }
 
 export async function resetAdminPassword(adminId, newPassword) {
+  const conditions = [
+    { loginId: adminId },
+    { memberId: adminId },
+    { mobile: adminId },
+    { email: adminId },
+  ];
+  if (UUID_REGEX.test(adminId)) {
+    conditions.push({ id: adminId });
+  }
+
   const user = await User.findOne({
     where: {
       role: ROLES.ADMIN,
-      [Op.or]: [
-        { id: adminId },
-        { loginId: adminId },
-        { memberId: adminId },
-        { mobile: adminId },
-        { email: adminId },
-      ],
+      [Op.or]: conditions,
     },
   });
 

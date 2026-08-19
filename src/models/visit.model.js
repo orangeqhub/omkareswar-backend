@@ -13,7 +13,7 @@ const Visit = sequelize.define(
     scheduledFor: { type: DataTypes.DATE, allowNull: false },
     meetingLocation: { type: DataTypes.STRING },
     status: {
-      type: DataTypes.ENUM('scheduled', 'confirmed', 'rescheduled', 'completed', 'cancelled', 'no_show'),
+      type: DataTypes.ENUM('pending_approval', 'scheduled', 'confirmed', 'rescheduled', 'completed', 'cancelled', 'no_show'),
       defaultValue: 'scheduled',
     },
     outcome: { type: DataTypes.STRING },

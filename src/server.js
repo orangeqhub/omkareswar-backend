@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import app from './app.js';
 import sequelize from './config/database.js';
 import { initSocket } from './sockets/index.js';
+import { ensureDefaultForms } from './services/registrationForm.service.js';
 
 dotenv.config();
 
@@ -40,9 +41,13 @@ async function start() {
     }
     console.log('Seed status checked');
 
+    // 5. Registration form CMS defaults ensured (idempotent)
+    const formSeed = await ensureDefaultForms();
+    console.log(`Registration form defaults ${formSeed.created ? 'seeded' : 'verified'}`);
+
     // Start server
     httpServer.listen(PORT, () => {
-      // 5. Server listening
+      // 6. Server listening
       console.log('Server listening');
       console.log(`OMKARESWAR REALTORS backend running on port ${PORT}`);
     });

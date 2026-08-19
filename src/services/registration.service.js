@@ -1,8 +1,9 @@
 import { Op } from 'sequelize';
 import { sequelize, User, UserCorrectionHistory } from '../models/index.js';
 import { ROLES } from '../constants/roles.js';
-import { PERMISSIONS } from '../constants/permissions.js';
+import { PERMISSIONS, ASSIGNABLE_EMPLOYEE_PERMISSIONS } from '../constants/permissions.js';
 import AppError from '../utils/AppError.js';
+import { buildUserScope } from '../utils/recordAccess.js';
 import { generateSequentialId } from '../utils/idGenerator.js';
 import { hashPassword } from '../utils/password.js';
 import { toSafeUser } from '../utils/sanitize.js';
@@ -10,9 +11,10 @@ import { getPagination } from '../utils/pagination.js';
 import * as otpService from './otp.service.js';
 import { createNotification } from './notification.service.js';
 import { log as auditLog } from './auditLog.service.js';
+import { validateAndExtractRegistrationData } from './registrationForm.service.js';
 
-const MEMBER_PREFIX = { buyer: 'BUY', seller: 'SEL', mediator: 'MED' };
-const REGISTERABLE_ROLES = [ROLES.BUYER, ROLES.SELLER, ROLES.MEDIATOR];
+const MEMBER_PREFIX = { buyer: 'BUY', seller: 'SEL', mediator: 'MED', employee: 'EMP' };
+const REGISTERABLE_ROLES = [ROLES.BUYER, ROLES.SELLER, ROLES.MEDIATOR, ROLES.EMPLOYEE];
 
 export async function requestRegistrationOtp(mobile) {
   return otpService.requestOtp(mobile, 'registration');
@@ -28,29 +30,38 @@ export async function register(role, data) {
     throw new AppError('Invalid role for registration', 400, 'INVALID_ROLE');
   }
 
-  const existing = await User.findOne({ where: { mobile: data.mobile } });
+  const { standard, roleDetail, customFields, password } = await validateAndExtractRegistrationData(role, data);
+
+  const existing = await User.findOne({ where: { mobile: standard.mobile } });
   if (existing) {
     throw new AppError('An account already exists with this mobile number', 409, 'MOBILE_EXISTS');
   }
 
   const result = await sequelize.transaction(async (t) => {
     const registrationId = await generateSequentialId('REG', t);
-    const passwordHash = data.password ? await hashPassword(data.password) : null;
+    const prefix = MEMBER_PREFIX[role];
+    const isEmployee = role === ROLES.EMPLOYEE;
+
+    // Employees start as pending and receive their memberId only after approval
+    const memberId = (prefix && !isEmployee) ? await generateSequentialId(prefix, t) : null;
+    const passwordHash = password ? await hashPassword(password) : null;
+    const status = isEmployee ? 'pending' : 'approved';
+    const verificationStatus = isEmployee ? 'pending_review' : 'completed';
+    const approvedAt = isEmployee ? null : new Date();
 
     const user = await User.create(
       {
         role,
         registrationId,
-        name: data.name,
-        mobile: data.mobile,
-        altMobile: data.altMobile,
-        email: data.email,
+        memberId,
+        ...standard,
+        roleDetail,
+        customFields,
         passwordHash,
-        district: data.district,
-        city: data.city,
-        address: data.address,
-        roleDetail: data.roleDetail || {},
-        status: 'pending',
+        tempPassword: isEmployee ? password : null,
+        status,
+        verificationStatus,
+        approvedAt,
       },
       { transaction: t }
     );
@@ -67,12 +78,17 @@ export async function register(role, data) {
       t
     );
 
-    await auditLog('registration.create', { id: user.id, role }, { registrationId, role }, t);
+    const action = isEmployee ? 'employee.registered' : 'registration.create';
+    await auditLog(action, { id: user.id, role }, { registrationId, role }, t);
 
     return user;
   });
 
-  return toSafeUser(result);
+  const safe = toSafeUser(result);
+  // The registrant just typed this password; echo it so the same value the
+  // employee chose is what the admin panel shows after approval.
+  if (role === ROLES.EMPLOYEE && password) safe.temporaryPassword = password;
+  return safe;
 }
 
 export async function getApplicationStatus(mobile) {
@@ -99,8 +115,8 @@ export async function listPending(viewer, query) {
     where.status = { [Op.in]: ['pending', 'correction_requested'] };
   }
 
-  if (viewer.role === ROLES.EMPLOYEE && !(viewer.permissions || []).includes(PERMISSIONS.VIEW_UNASSIGNED_RECORDS)) {
-    where.assignedEmployeeId = viewer.id;
+  if (viewer.role === ROLES.EMPLOYEE) {
+    Object.assign(where, await buildUserScope(viewer));
   }
 
   const { rows, count } = await User.findAndCountAll({
@@ -154,12 +170,18 @@ export async function approve(id, actor) {
   return sequelize.transaction(async (t) => {
     const prefix = MEMBER_PREFIX[user.role];
     const memberId = await generateSequentialId(prefix, t);
+    const isEmployee = user.role === ROLES.EMPLOYEE;
 
     user.memberId = memberId;
-    user.status = 'approved';
+    user.status = isEmployee ? 'active' : 'approved';
     user.approvedBy = actor.id;
     user.approvedAt = new Date();
     user.verificationStatus = 'completed';
+    
+    if (isEmployee) {
+      user.permissions = ASSIGNABLE_EMPLOYEE_PERMISSIONS.filter((p) => p !== PERMISSIONS.VIEW_UNASSIGNED_RECORDS);
+    }
+    
     await user.save({ transaction: t });
 
     await createNotification(
@@ -174,8 +196,14 @@ export async function approve(id, actor) {
       t
     );
 
-    await auditLog('registration.approve', actor, { registrationId: user.id, memberId }, t);
-    return toSafeUser(user);
+    const action = isEmployee ? 'employee.approved' : 'registration.approve';
+    await auditLog(action, actor, { registrationId: user.id, employeeId: user.id, memberId }, t);
+
+    const safe = toSafeUser(user);
+    if (isEmployee && user.tempPassword && actor.role === ROLES.ADMIN) {
+      safe.temporaryPassword = user.tempPassword;
+    }
+    return safe;
   });
 }
 
@@ -183,6 +211,7 @@ export async function reject(id, reason, actor) {
   const user = await getRegistrationOrThrow(id);
 
   return sequelize.transaction(async (t) => {
+    const isEmployee = user.role === ROLES.EMPLOYEE;
     user.status = 'rejected';
     user.rejectionReason = reason;
     await user.save({ transaction: t });
@@ -199,7 +228,8 @@ export async function reject(id, reason, actor) {
       t
     );
 
-    await auditLog('registration.reject', actor, { registrationId: user.id, reason }, t);
+    const action = isEmployee ? 'employee.rejected' : 'registration.reject';
+    await auditLog(action, actor, { registrationId: user.id, employeeId: user.id, reason }, t);
     return toSafeUser(user);
   });
 }

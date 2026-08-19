@@ -23,6 +23,16 @@ export default function errorHandler(err, req, res, next) {
     return res.status(400).json({ success: false, message: err.message, code: 'UPLOAD_ERROR' });
   }
 
+  if (err.name === 'SequelizeDatabaseError') {
+    // eslint-disable-next-line no-console
+    console.error('SequelizeDatabaseError:', err.original || err);
+    return res.status(422).json({
+      success: false,
+      message: process.env.NODE_ENV === 'production' ? 'Invalid data format' : err.message,
+      code: 'DATABASE_ERROR',
+    });
+  }
+
   // eslint-disable-next-line no-console
   console.error(err);
   return res.status(500).json({

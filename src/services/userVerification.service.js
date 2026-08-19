@@ -1,9 +1,9 @@
 import { Op } from 'sequelize';
 import { sequelize, User, UserCorrectionHistory } from '../models/index.js';
-import { PERMISSIONS } from '../constants/permissions.js';
 import { ROLES } from '../constants/roles.js';
 import AppError from '../utils/AppError.js';
 import { getPagination } from '../utils/pagination.js';
+import { buildUserScope, assertUserRecordAccess } from '../utils/recordAccess.js';
 import { createNotification } from './notification.service.js';
 import { log as auditLog } from './auditLog.service.js';
 
@@ -13,9 +13,7 @@ export async function listAssigned(employee, query) {
   const { page, pageSize, limit, offset } = getPagination(query);
   const where = { role: { [Op.in]: REGISTERABLE_ROLES } };
 
-  if (!(employee.permissions || []).includes(PERMISSIONS.VIEW_UNASSIGNED_RECORDS)) {
-    where.assignedEmployeeId = employee.id;
-  }
+  Object.assign(where, await buildUserScope(employee));
   if (query.verificationStatus) where.verificationStatus = query.verificationStatus;
 
   const { rows, count } = await User.findAndCountAll({
@@ -38,8 +36,10 @@ async function getUserOrThrow(userId, transaction) {
   return user;
 }
 
-export async function getOne(userId) {
-  return getUserOrThrow(userId);
+export async function getOne(userId, actor) {
+  const user = await getUserOrThrow(userId);
+  await assertUserRecordAccess(actor, user);
+  return user;
 }
 
 async function addHistory(userId, actorId, action, extra, transaction) {
@@ -48,6 +48,7 @@ async function addHistory(userId, actorId, action, extra, transaction) {
 
 export async function startReview(userId, actor) {
   const user = await getUserOrThrow(userId);
+  await assertUserRecordAccess(actor, user);
   return sequelize.transaction(async (t) => {
     user.verificationStatus = 'in_review';
     await user.save({ transaction: t });
@@ -59,6 +60,7 @@ export async function startReview(userId, actor) {
 
 export async function correctionRequest(userId, reason, fields, actor) {
   const user = await getUserOrThrow(userId);
+  await assertUserRecordAccess(actor, user);
   return sequelize.transaction(async (t) => {
     user.verificationStatus = 'correction_requested';
     user.status = 'correction_requested';
@@ -87,6 +89,7 @@ export async function correctionRequest(userId, reason, fields, actor) {
 
 async function recommend(userId, status, action, actor) {
   const user = await getUserOrThrow(userId);
+  await assertUserRecordAccess(actor, user);
   return sequelize.transaction(async (t) => {
     user.verificationStatus = status;
     await user.save({ transaction: t });
@@ -114,6 +117,7 @@ export const recommendRejection = (userId, actor) => recommend(userId, 'recommen
 
 export async function complete(userId, actor) {
   const user = await getUserOrThrow(userId);
+  await assertUserRecordAccess(actor, user);
   return sequelize.transaction(async (t) => {
     user.verificationStatus = 'completed';
     await user.save({ transaction: t });

@@ -60,3 +60,5 @@ employeeRouter.get(
 export const adminRouter = Router();
 adminRouter.get('/', auth, requireRole(ROLES.ADMIN), visitController.adminVisits);
 adminRouter.patch('/:id/assign', auth, requireRole(ROLES.ADMIN), assignValidator, validate, visitController.assign);
+adminRouter.post('/:id/approve', auth, requireRole(ROLES.ADMIN), idParamValidator, validate, visitController.approve);
+adminRouter.post('/:id/reject', auth, requireRole(ROLES.ADMIN), idParamValidator, validate, visitController.reject);

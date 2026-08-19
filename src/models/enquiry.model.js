@@ -27,6 +27,7 @@ const Enquiry = sequelize.define(
       type: DataTypes.ENUM('new', 'contacted', 'followup_required', 'visit_requested', 'closed'),
       defaultValue: 'new',
     },
+    pendingStatus: { type: DataTypes.STRING, allowNull: true },
     priority: { type: DataTypes.ENUM('low', 'medium', 'high'), defaultValue: 'medium' },
     nextFollowUpAt: { type: DataTypes.DATE },
     assignedEmployeeId: { type: DataTypes.UUID, allowNull: true },

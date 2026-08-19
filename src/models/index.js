@@ -27,6 +27,8 @@ import CmsSettings from './cmsSettings.model.js';
 import AppSettings from './appSettings.model.js';
 import Commission from './commission.model.js';
 import RecentlyViewedProperty from './recentlyViewedProperty.model.js';
+import RegistrationForm from './registrationForm.model.js';
+import RegistrationField from './registrationField.model.js';
 
 // ---- Associations ----
 MediaRule.hasMany(MediaRuleCommonSlot, { foreignKey: 'mediaRuleId', as: 'commonSlots' });
@@ -66,6 +68,9 @@ RecentlyViewedProperty.belongsTo(Property, { foreignKey: 'propertyId', as: 'prop
 
 Commission.belongsTo(Property, { foreignKey: 'propertyId', as: 'property' });
 
+RegistrationForm.hasMany(RegistrationField, { foreignKey: 'registrationFormId', as: 'fields' });
+RegistrationField.belongsTo(RegistrationForm, { foreignKey: 'registrationFormId' });
+
 export {
   sequelize,
   User,
@@ -95,4 +100,6 @@ export {
   AppSettings,
   Commission,
   RecentlyViewedProperty,
+  RegistrationForm,
+  RegistrationField,
 };

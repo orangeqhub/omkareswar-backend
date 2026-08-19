@@ -7,9 +7,11 @@ import {
   FollowUp,
   Notification,
   Favourite,
+  AuditLog,
+  CallNote,
 } from '../models/index.js';
 import { ROLES } from '../constants/roles.js';
-import { PERMISSIONS } from '../constants/permissions.js';
+import { buildRecordScope, buildFollowUpScope } from '../utils/recordAccess.js';
 
 export async function adminDashboard() {
   const [totalUsers, pendingRegistrations, totalProperties, pendingProperties, activeProperties, totalEnquiries, newEnquiries, totalVisits, upcomingVisits] =
@@ -41,10 +43,11 @@ export async function adminDashboard() {
 }
 
 export async function employeeDashboard(employee) {
-  const scoped = !(employee.permissions || []).includes(PERMISSIONS.VIEW_UNASSIGNED_RECORDS);
-  const followUpWhere = scoped ? { assignedEmployeeId: employee.id } : {};
-  const enquiryWhere = scoped ? { assignedEmployeeId: employee.id } : {};
-  const visitWhere = scoped ? { assignedEmployeeId: employee.id } : {};
+  const [followUpWhere, enquiryWhere, visitWhere] = await Promise.all([
+    buildFollowUpScope(employee),
+    buildRecordScope(employee, ['buyerId', 'sellerId']),
+    buildRecordScope(employee, ['buyerId', 'sellerId']),
+  ]);
 
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -166,4 +169,95 @@ export async function mediatorDashboard(mediatorId) {
   return {
     counts: { assignedBuyers, assignedSellers, assignedEnquiries, assignedVisits, assignedProperties },
   };
+}
+
+export async function adminEmployeePerformance(query) {
+  const { employeeId, startDate, endDate } = query;
+  const dateFilter = {};
+  if (startDate || endDate) {
+    const start = startDate ? new Date(startDate) : new Date('1970-01-01');
+    const end = endDate ? new Date(endDate) : new Date('2100-01-01');
+    if (endDate && !endDate.includes('T')) {
+      end.setHours(23, 59, 59, 999);
+    }
+    dateFilter[Op.between] = [start, end];
+  }
+
+  const employeeWhere = { role: ROLES.EMPLOYEE };
+  if (employeeId) {
+    employeeWhere.id = employeeId;
+  }
+  const employees = await User.findAll({ where: employeeWhere, attributes: ['id', 'name', 'memberId', 'status'] });
+
+  const performanceList = [];
+
+  for (const emp of employees) {
+    const empWhere = { assignedEmployeeId: emp.id };
+    const empActorWhere = { actorId: emp.id };
+    const empCreatedWhere = { createdBy: emp.id };
+
+    if (startDate || endDate) {
+      empWhere.createdAt = dateFilter;
+      empActorWhere.createdAt = dateFilter;
+      empCreatedWhere.createdAt = dateFilter;
+    }
+
+    const [
+      totalAssigned,
+      completedFollowUps,
+      pendingFollowUps,
+      completedActivities,
+      callsCount,
+      meetingsCount,
+      siteVisitsCount,
+      interestedCount,
+      notInterestedCount
+    ] = await Promise.all([
+      FollowUp.count({ where: empWhere }),
+      FollowUp.count({ where: { ...empWhere, status: 'completed' } }),
+      FollowUp.count({ where: { ...empWhere, status: { [Op.in]: ['assigned', 'in_progress'] } } }),
+      AuditLog.count({ where: empActorWhere }),
+      CallNote.count({ where: empCreatedWhere }),
+      AuditLog.count({ where: { ...empActorWhere, action: 'followup.meeting' } }),
+      Visit.count({ where: { ...empWhere, status: 'completed' } }),
+      Enquiry.count({ where: { ...empWhere, status: { [Op.in]: ['contacted', 'followup_required', 'visit_requested'] } } }),
+      Enquiry.count({ where: { ...empWhere, status: 'closed' } })
+    ]);
+
+    // Calculate Overdue Follow-ups
+    const now = new Date();
+    const allFollowUps = await FollowUp.findAll({ where: { assignedEmployeeId: emp.id } });
+    const overdueFollowUps = allFollowUps.filter((f) => {
+      const due = new Date(`${f.dueDate}T${f.dueTime || '23:59'}`);
+      if (startDate || endDate) {
+        const start = startDate ? new Date(startDate) : new Date('1970-01-01');
+        const end = endDate ? new Date(endDate) : new Date('2100-01-01');
+        if (endDate && !endDate.includes('T')) end.setHours(23, 59, 59, 999);
+        if (due < start || due > end) return false;
+      }
+      return due < now && !['completed', 'cancelled'].includes(f.status);
+    }).length;
+
+    performanceList.push({
+      employeeId: emp.id,
+      name: emp.name,
+      memberId: emp.memberId,
+      status: emp.status,
+      metrics: {
+        totalAssigned,
+        completedFollowUps,
+        pendingFollowUps,
+        overdueFollowUps,
+        completedActivities,
+        calls: callsCount,
+        meetings: meetingsCount,
+        siteVisits: siteVisitsCount,
+        interestedCustomers: interestedCount,
+        notInterestedCustomers: notInterestedCount,
+        bookingsGenerated: 0
+      }
+    });
+  }
+
+  return performanceList;
 }

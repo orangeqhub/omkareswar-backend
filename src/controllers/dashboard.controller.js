@@ -26,3 +26,8 @@ export const mediator = asyncHandler(async (req, res) => {
   const data = await dashboardService.mediatorDashboard(req.user.id);
   sendSuccess(res, { message: 'Dashboard fetched', data });
 });
+
+export const performance = asyncHandler(async (req, res) => {
+  const data = await dashboardService.adminEmployeePerformance(req.query);
+  sendSuccess(res, { message: 'Employee performance metrics fetched', data });
+});

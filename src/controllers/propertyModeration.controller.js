@@ -8,7 +8,7 @@ export const list = asyncHandler(async (req, res) => {
 });
 
 export const getOne = asyncHandler(async (req, res) => {
-  const data = await service.getOne(req.params.id);
+  const data = await service.getOne(req.params.id, req.user);
   sendSuccess(res, { message: 'Property fetched', data });
 });
 

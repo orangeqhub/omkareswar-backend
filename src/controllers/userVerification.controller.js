@@ -9,7 +9,7 @@ export const list = asyncHandler(async (req, res) => {
 });
 
 export const getOne = asyncHandler(async (req, res) => {
-  const data = await service.getOne(req.params.userId);
+  const data = await service.getOne(req.params.userId, req.user);
   sendSuccess(res, { message: 'User fetched', data: toSafeUser(data) });
 });
 

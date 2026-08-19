@@ -21,11 +21,13 @@ const User = sequelize.define(
     altMobile: { type: DataTypes.STRING },
     email: { type: DataTypes.STRING },
     passwordHash: { type: DataTypes.STRING },
+    tempPassword: { type: DataTypes.STRING }, // plaintext password, admin-visible only
     profileImage: { type: DataTypes.STRING },
     district: { type: DataTypes.STRING },
     city: { type: DataTypes.STRING },
     address: { type: DataTypes.TEXT },
     roleDetail: { type: DataTypes.JSONB, defaultValue: {} }, // extra role-specific registration fields
+    customFields: { type: DataTypes.JSONB, defaultValue: {} }, // CMS-defined dynamic registration values
     status: {
       type: DataTypes.ENUM('pending', 'approved', 'rejected', 'correction_requested', 'active', 'inactive'),
       allowNull: false,

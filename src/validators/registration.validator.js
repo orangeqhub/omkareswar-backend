@@ -1,15 +1,11 @@
 import { body, param, query } from 'express-validator';
 
+// Field-level validation happens dynamically in registrationForm.service.js based
+// on the admin-configured form for each role. This validator only sanity-checks
+// the fixed envelope fields.
 export const registerValidator = [
-  body('role').isIn(['buyer', 'seller', 'mediator']).withMessage('Invalid role'),
-  body('name').trim().notEmpty().withMessage('Name is required'),
-  body('mobile').trim().matches(/^[6-9]\d{9}$/).withMessage('Enter a valid 10 digit mobile number'),
-  body('altMobile').optional({ checkFalsy: true }).trim(),
-  body('email').optional({ checkFalsy: true }).isEmail().withMessage('Enter a valid email'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  body('district').trim().notEmpty().withMessage('District is required'),
-  body('city').trim().notEmpty().withMessage('City is required'),
-  body('address').trim().notEmpty().withMessage('Address is required'),
+  body('role').isIn(['buyer', 'seller', 'mediator', 'employee']).withMessage('Invalid role'),
+  body('customFields').optional({ checkFalsy: true }).isObject().withMessage('customFields must be an object'),
 ];
 
 export const statusQueryValidator = [query('mobile').trim().matches(/^[6-9]\d{9}$/).withMessage('Enter a valid mobile number')];

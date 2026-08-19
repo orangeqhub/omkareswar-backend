@@ -11,10 +11,19 @@ import {
   updatePermissionsValidator,
   updateEmployeeStatusValidator,
   assignMediatorValidator,
+  assignEmployeeValidator,
+  changePasswordValidator,
 } from '../validators/user.validator.js';
 
 const router = Router();
 
+router.post(
+  '/change-password',
+  auth,
+  changePasswordValidator,
+  validate,
+  userController.changeOwnPassword
+);
 router.get('/', auth, requireRole(ROLES.ADMIN, ROLES.EMPLOYEE, ROLES.MEDIATOR), userController.listUsers);
 router.get('/:id', auth, idParamValidator, validate, userController.getUser);
 router.patch('/:id', auth, idParamValidator, validate, userController.updateUser);
@@ -62,4 +71,45 @@ adminRouter.patch(
   assignMediatorValidator,
   validate,
   userController.assignMediator
+);
+adminRouter.post(
+  '/users',
+  auth,
+  requireRole(ROLES.ADMIN),
+  userController.createUser
+);
+adminRouter.delete(
+  '/users/:id',
+  auth,
+  requireRole(ROLES.ADMIN),
+  idParamValidator,
+  validate,
+  userController.deleteUser
+);
+
+adminRouter.get(
+  '/employees/:id/details',
+  auth,
+  requireRole(ROLES.ADMIN),
+  idParamValidator,
+  validate,
+  userController.getEmployeeDetail
+);
+
+adminRouter.get(
+  '/users/:id/details',
+  auth,
+  requireRole(ROLES.ADMIN),
+  idParamValidator,
+  validate,
+  userController.getUserDetail
+);
+
+adminRouter.patch(
+  '/users/:id/assign-employee',
+  auth,
+  requireRole(ROLES.ADMIN),
+  assignEmployeeValidator,
+  validate,
+  userController.assignEmployee
 );

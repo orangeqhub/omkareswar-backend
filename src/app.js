@@ -47,6 +47,7 @@ import auditLogRoutes from './routes/auditLog.routes.js';
 import cmsRoutes, { adminRouter as adminCmsRoutes } from './routes/cms.routes.js';
 import appSettingsRoutes from './routes/appSettings.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
+import registrationFormRoutes, { adminRouter as adminRegistrationFormRoutes } from './routes/registrationForm.routes.js';
 import reportRoutes from './routes/report.routes.js';
 import {
   adminRouter as adminDashboardRoutes,
@@ -102,6 +103,10 @@ app.get('/api/health', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/registrations', registrationRoutes);
 app.use('/api/admin/registrations', adminRegistrationRoutes);
+
+// ---- Registration form CMS (public config + admin config) ----
+app.use('/api/registration-forms', registrationFormRoutes);
+app.use('/api/admin/registration-forms', adminRegistrationFormRoutes);
 
 // ---- Users & employees ----
 app.use('/api/users', userRoutes);

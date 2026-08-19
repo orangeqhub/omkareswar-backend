@@ -9,12 +9,13 @@ export const updateStatusValidator = [
     .withMessage('Invalid status'),
 ];
 
+// Field-level validation happens dynamically in registrationForm.service.js based
+// on the admin-configured EMPLOYEE form. This validator only sanity-checks the
+// fixed envelope fields.
 export const createEmployeeValidator = [
-  body('name').trim().notEmpty().withMessage('Name is required'),
-  body('mobile').trim().matches(/^[6-9]\d{9}$/).withMessage('Enter a valid 10 digit mobile number'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('email').optional({ checkFalsy: true }).isEmail().withMessage('Enter a valid email'),
   body('permissions').optional().isArray().withMessage('Permissions must be an array'),
+  body('customFields').optional({ checkFalsy: true }).isObject().withMessage('customFields must be an object'),
 ];
 
 export const updatePermissionsValidator = [
@@ -30,4 +31,15 @@ export const updateEmployeeStatusValidator = [
 export const assignMediatorValidator = [
   param('id').isUUID().withMessage('Invalid id'),
   body('mediatorId').isUUID().withMessage('Invalid mediator id'),
+];
+
+export const assignEmployeeValidator = [
+  param('id').isUUID().withMessage('Invalid id'),
+  body('employeeId').optional({ checkFalsy: true }).isUUID().withMessage('Invalid employee id'),
+  body('reason').optional().trim(),
+];
+
+export const changePasswordValidator = [
+  body('currentPassword').isString().notEmpty().withMessage('Current password is required'),
+  body('newPassword').isString().isLength({ min: 6 }).withMessage('New password must be at least 6 characters'),
 ];

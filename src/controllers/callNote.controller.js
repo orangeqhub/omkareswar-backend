@@ -3,7 +3,7 @@ import { sendSuccess } from '../utils/response.js';
 import * as callNoteService from '../services/callNote.service.js';
 
 export const list = asyncHandler(async (req, res) => {
-  const data = await callNoteService.list(req.params.id);
+  const data = await callNoteService.list(req.params.id, req.user);
   sendSuccess(res, { message: 'Call notes fetched', data });
 });
 

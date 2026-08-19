@@ -8,10 +8,10 @@ import {
   RecentlyViewedProperty,
 } from '../models/index.js';
 import { ROLES } from '../constants/roles.js';
-import { PERMISSIONS } from '../constants/permissions.js';
 import AppError from '../utils/AppError.js';
 import { generateSequentialId } from '../utils/idGenerator.js';
 import { getPagination } from '../utils/pagination.js';
+import { buildRecordScope } from '../utils/recordAccess.js';
 import { createNotification } from './notification.service.js';
 import { log as auditLog } from './auditLog.service.js';
 
@@ -36,6 +36,31 @@ function buildSort(sort) {
   }
 }
 
+function applyLocationFilter(where, locationQuery) {
+  if (!locationQuery) return;
+  const parts = locationQuery.split(',').map(s => s.trim().replace(/\s+District$/i, '')).filter(Boolean);
+  if (parts.length > 1) {
+    where[Op.and] = parts.map(part => ({
+      [Op.or]: [
+        { city: { [Op.iLike]: `%${part}%` } },
+        { district: { [Op.iLike]: `%${part}%` } },
+        { mandal: { [Op.iLike]: `%${part}%` } },
+        { village: { [Op.iLike]: `%${part}%` } },
+        { locality: { [Op.iLike]: `%${part}%` } },
+      ]
+    }));
+  } else if (parts.length === 1) {
+    const part = parts[0];
+    where[Op.or] = [
+      { city: { [Op.iLike]: `%${part}%` } },
+      { district: { [Op.iLike]: `%${part}%` } },
+      { mandal: { [Op.iLike]: `%${part}%` } },
+      { village: { [Op.iLike]: `%${part}%` } },
+      { locality: { [Op.iLike]: `%${part}%` } },
+    ];
+  }
+}
+
 export async function listProperties(query) {
   const { page, pageSize, limit, offset } = getPagination(query);
   const where = {};
@@ -49,7 +74,9 @@ export async function listProperties(query) {
       where.categorySlug = query.categorySlug;
     }
   }
-  if (query.city) where.city = query.city;
+  if (query.city) {
+    applyLocationFilter(where, query.city);
+  }
   if (query.transactionType) where.transactionType = query.transactionType;
   if (query.sellerId) where.sellerId = query.sellerId;
   if (query.status) where.status = query.status;
@@ -104,13 +131,13 @@ export async function getPropertyById(id, transaction) {
 
 export async function getFeatured(limit = 8, city) {
   const where = { featured: true, status: 'active' };
-  if (city) where.city = city;
+  if (city) applyLocationFilter(where, city);
   return Property.findAll({ where, include: INCLUDE, order: [['createdAt', 'DESC']], limit: Number(limit) });
 }
 
 export async function getLatest(limit = 8, city) {
   const where = { status: 'active' };
-  if (city) where.city = city;
+  if (city) applyLocationFilter(where, city);
   return Property.findAll({ where, include: INCLUDE, order: [['createdAt', 'DESC']], limit: Number(limit) });
 }
 
@@ -207,11 +234,15 @@ const DRAFT_FIELDS = [
   'locality', 'landmark', 'pincode', 'address', 'locationEn', 'locationTe', 'mapLat', 'mapLng',
   'ventureName', 'structure', 'plotDetails', 'amenities', 'contactName', 'contactPhone',
   'preferWhatsapp', 'preferCall', 'hidePhone',
+  'villageName', 'surveyNumber', 'acres', 'acreValuation', 'totalSaleValue', 'conversion',
+  'passbook', 'adangal', 'rsrCopy', 'documentationNumber', 'landDocumentHistory', 'ownerName',
+  'town', 'street', 'roadFacing', 'plotFacing', 'liftFacility', 'builtUpArea', 'groundSquareYards', 'facing',
+  'dynamicFields',
 ];
 
 export async function createDraft(sellerId, data) {
   return sequelize.transaction(async (t) => {
-    const propertyCode = await generateSequentialId('PROP', t);
+    const propertyCode = await generateSequentialId('PROP', t, 4);
 
     const payload = { sellerId, status: 'draft', propertyCode, postedDate: new Date(), updatedDate: new Date() };
     DRAFT_FIELDS.forEach((f) => {
@@ -235,9 +266,14 @@ export async function createDraft(sellerId, data) {
 
 function assertOwnerOrStaff(property, user) {
   const isOwner = property.sellerId === user.id;
-  const isStaff = [ROLES.ADMIN, ROLES.EMPLOYEE].includes(user.role);
+  const isAdmin = user.role === ROLES.ADMIN;
   const isAssignedMediator = property.assignedMediatorId === user.id;
-  if (!isOwner && !isStaff && !isAssignedMediator) {
+  if (user.role === ROLES.EMPLOYEE) {
+    const assigned = property.assignedEmployeeId === user.id;
+    if (assigned) return;
+    throw new AppError('You are not allowed to access this property', 403, 'FORBIDDEN');
+  }
+  if (!isOwner && !isAdmin && !isAssignedMediator) {
     throw new AppError('You are not allowed to access this property', 403, 'FORBIDDEN');
   }
 }
@@ -262,6 +298,8 @@ export async function updateProperty(id, data, actor) {
     property.updatedDate = new Date();
     await property.save({ transaction: t });
 
+    await auditLog('property.update', actor, { propertyId: property.id }, t);
+
     await syncImages(property.id, data.images, t);
     await syncDocuments(property.id, data.documents, t);
 
@@ -272,12 +310,7 @@ export async function updateProperty(id, data, actor) {
 export async function submitProperty(id, actor) {
   const property = await Property.findByPk(id);
   if (!property) throw new AppError('Property not found', 404, 'NOT_FOUND');
-  const isOwner = property.sellerId === actor.id;
-  const isStaff = [ROLES.ADMIN, ROLES.EMPLOYEE].includes(actor.role);
-  const isAssignedMediator = property.assignedMediatorId === actor.id;
-  if (!isOwner && !isStaff && !isAssignedMediator) {
-    throw new AppError('You are not allowed to submit this property', 403, 'FORBIDDEN');
-  }
+  assertOwnerOrStaff(property, actor);
 
   return sequelize.transaction(async (t) => {
     const isAdmin = actor.role === ROLES.ADMIN;
@@ -337,9 +370,7 @@ export async function listForMediator(mediatorId, query) {
 export async function listForEmployee(employee, query) {
   const { page, pageSize, limit, offset } = getPagination(query);
   const where = {};
-  if (!(employee.permissions || []).includes(PERMISSIONS.VIEW_UNASSIGNED_RECORDS)) {
-    where.assignedEmployeeId = employee.id;
-  }
+  Object.assign(where, await buildRecordScope(employee, ['sellerId']));
   if (query.status) where.status = query.status;
 
   const { rows, count } = await Property.findAndCountAll({
@@ -503,4 +534,36 @@ export async function markSold(id, actor) {
   await property.save();
   await auditLog('property.markSold', actor, { propertyId: id });
   return getPropertyById(id);
+}
+
+const LOCATION_IMAGES = {
+  guntur: 'https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=600&q=60',
+  vijayawada: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?auto=format&fit=crop&w=600&q=60',
+  hyderabad: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=600&q=60',
+  mangalagiri: 'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=600&q=60',
+  tenali: 'https://images.unsplash.com/photo-1460317442991-0ec209397118?auto=format&fit=crop&w=600&q=60',
+  ongole: 'https://images.unsplash.com/photo-1501183638710-841dd1904471?auto=format&fit=crop&w=600&q=60',
+  visakhapatnam: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=600&q=60',
+  warangal: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=600&q=60',
+};
+const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=600&q=60';
+
+export async function getPopularLocations(limit = 6) {
+  const { fn, col } = await import('sequelize');
+  const results = await Property.findAll({
+    attributes: ['city', [fn('COUNT', col('id')), 'count']],
+    where: { status: 'active', city: { [Op.ne]: null } },
+    group: ['city'],
+    order: [[fn('COUNT', col('id')), 'DESC']],
+    limit,
+    raw: true,
+  });
+
+  return results
+    .filter((r) => r.city && r.city.trim())
+    .map((r) => ({
+      city: r.city,
+      count: Number(r.count),
+      image: LOCATION_IMAGES[r.city.toLowerCase()] || DEFAULT_IMAGE,
+    }));
 }

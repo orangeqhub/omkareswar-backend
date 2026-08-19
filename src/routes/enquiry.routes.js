@@ -66,6 +66,14 @@ employeeRouter.get(
   requirePermission(PERMISSIONS.ENQUIRY_VIEW),
   enquiryController.employeeEnquiries
 );
+employeeRouter.patch(
+  '/enquiries/:id/mark-status',
+  auth,
+  requireRole(ROLES.EMPLOYEE),
+  statusValidator,
+  validate,
+  enquiryController.employeeMarkStatus
+);
 
 // ---- /api/admin/enquiries ----
 export const adminRouter = Router();
@@ -86,3 +94,5 @@ adminRouter.patch(
   validate,
   enquiryController.assignMediator
 );
+adminRouter.post('/:id/approve-status', auth, requireRole(ROLES.ADMIN), idParamValidator, validate, enquiryController.approveStatus);
+adminRouter.post('/:id/reject-status', auth, requireRole(ROLES.ADMIN), idParamValidator, validate, enquiryController.rejectStatus);

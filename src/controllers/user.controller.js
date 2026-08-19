@@ -8,8 +8,13 @@ export const listUsers = asyncHandler(async (req, res) => {
 });
 
 export const getUser = asyncHandler(async (req, res) => {
-  const data = await userService.getUser(req.params.id);
+  const data = await userService.getUser(req.params.id, req.user);
   sendSuccess(res, { message: 'User fetched', data });
+});
+
+export const changeOwnPassword = asyncHandler(async (req, res) => {
+  const data = await userService.changeOwnPassword(req.user, req.body);
+  sendSuccess(res, { message: 'Password updated', data });
 });
 
 export const updateUser = asyncHandler(async (req, res) => {
@@ -40,4 +45,29 @@ export const updateEmployeeStatus = asyncHandler(async (req, res) => {
 export const assignMediator = asyncHandler(async (req, res) => {
   const data = await userService.assignMediator(req.params.id, req.body.mediatorId, req.user);
   sendSuccess(res, { message: 'Mediator assigned', data });
+});
+
+export const assignEmployee = asyncHandler(async (req, res) => {
+  const data = await userService.assignEmployee(req.params.id, req.body.employeeId, req.user, req.body.reason);
+  sendSuccess(res, { message: 'Employee assigned', data });
+});
+
+export const createUser = asyncHandler(async (req, res) => {
+  const data = await userService.createUser(req.body, req.user);
+  sendSuccess(res, { message: 'User created', data, statusCode: 201 });
+});
+
+export const deleteUser = asyncHandler(async (req, res) => {
+  await userService.deleteUser(req.params.id, req.user);
+  sendSuccess(res, { message: 'User deleted', data: null });
+});
+
+export const getEmployeeDetail = asyncHandler(async (req, res) => {
+  const data = await userService.getEmployeeDetail(req.params.id, req.user);
+  sendSuccess(res, { message: 'Employee detail fetched', data });
+});
+
+export const getUserDetail = asyncHandler(async (req, res) => {
+  const data = await userService.getUserDetail(req.params.id, req.user);
+  sendSuccess(res, { message: 'User detail fetched', data });
 });

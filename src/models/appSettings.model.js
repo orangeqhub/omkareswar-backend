@@ -9,6 +9,9 @@ const AppSettings = sequelize.define(
     autoApproveRegistrations: { type: DataTypes.BOOLEAN, defaultValue: false },
     autoApproveProperties: { type: DataTypes.BOOLEAN, defaultValue: false },
     maxImageSizeMb: { type: DataTypes.INTEGER, defaultValue: 5 },
+    customLocations: { type: DataTypes.JSON, defaultValue: [] },
+    propertyFields: { type: DataTypes.JSON, defaultValue: [] },
+    fieldConfig: { type: DataTypes.JSON, defaultValue: {} },
   },
   { tableName: 'app_settings' }
 );

@@ -144,6 +144,11 @@ export const markSold = asyncHandler(async (req, res) => {
   sendSuccess(res, { message: 'Property marked as sold', data });
 });
 
+export const popularLocations = asyncHandler(async (req, res) => {
+  const data = await propertyService.getPopularLocations(Number(req.query.limit) || 6);
+  sendSuccess(res, { message: 'Popular locations fetched', data });
+});
+
 export const categoryInUse = asyncHandler(async (req, res) => {
   const used = await categoryService.isCategoryInUse(req.params.slug);
   sendSuccess(res, { message: 'Checked', data: { inUse: used } });

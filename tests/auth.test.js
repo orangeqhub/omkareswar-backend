@@ -1,10 +1,16 @@
 import request from 'supertest';
 import app from '../src/app.js';
 import sequelize from '../src/config/database.js';
+import { Op } from 'sequelize';
+import { Notification } from '../src/models/index.js';
 
 afterAll(async () => {
   await sequelize.close();
 });
+
+function uniqueMobile() {
+  return `9${String(Date.now()).slice(-9)}`;
+}
 
 describe('Auth flows', () => {
   it('requests an OTP for a valid mobile number', async () => {
@@ -83,5 +89,61 @@ describe('Auth flows', () => {
     const res = await request(app).get('/api/admin/settings').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(403);
     expect(res.body.code).toBe('ROLE_NOT_ALLOWED');
+  });
+
+  it('lets an employee change their own password and notifies admins', async () => {
+    const admin = await request(app).post('/api/auth/admin/login').send({ loginId: 'ADMIN001', password: 'Admin@123' });
+    const adminToken = admin.body.data.token;
+
+    const created = await request(app)
+      .post('/api/admin/employees')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        firstName: 'Password',
+        lastName: 'Changer',
+        mobile: uniqueMobile(),
+        password: 'OldPass@123',
+        confirmPassword: 'OldPass@123',
+        permissions: [],
+        aadhaarCard: 'https://example.com/aadhaar.jpg',
+        panCard: 'https://example.com/pan.jpg',
+      });
+    expect(created.status).toBe(201);
+    const employeeId = created.body.data.memberId;
+
+    const login = await request(app).post('/api/auth/employee/login').send({ employeeId, password: 'OldPass@123' });
+    expect(login.status).toBe(200);
+    const token = login.body.data.token;
+
+    // Wrong current password is rejected
+    const wrong = await request(app)
+      .post('/api/users/change-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ currentPassword: 'WrongPass@1', newPassword: 'NewPass@456' });
+    expect(wrong.status).toBe(400);
+    expect(wrong.body.code).toBe('CURRENT_PASSWORD_WRONG');
+
+    // Correct change succeeds and never exposes the password to the caller
+    const res = await request(app)
+      .post('/api/users/change-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ currentPassword: 'OldPass@123', newPassword: 'NewPass@456' });
+    expect(res.status).toBe(200);
+    expect(res.body.data.temporaryPassword).toBeUndefined();
+
+    // New password works, old one no longer does
+    const newLogin = await request(app).post('/api/auth/employee/login').send({ employeeId, password: 'NewPass@456' });
+    expect(newLogin.status).toBe(200);
+    const oldLogin = await request(app).post('/api/auth/employee/login').send({ employeeId, password: 'OldPass@123' });
+    expect(oldLogin.status).toBe(401);
+
+    // An admin-facing notification records the new password
+    const notification = await Notification.findOne({
+      where: {
+        audienceRole: 'admin',
+        titleEn: { [Op.like]: `%${employeeId}) updated their password. New password: NewPass@456` },
+      },
+    });
+    expect(notification).not.toBeNull();
   });
 });

@@ -28,7 +28,7 @@ export const buyerEnquiries = asyncHandler(async (req, res) => {
 });
 
 export const getOne = asyncHandler(async (req, res) => {
-  const data = await enquiryService.getOne(req.params.id);
+  const data = await enquiryService.getOneForActor(req.params.id, req.user);
   sendSuccess(res, { message: 'Enquiry fetched', data });
 });
 
@@ -52,12 +52,27 @@ export const complete = asyncHandler(async (req, res) => {
   sendSuccess(res, { message: 'Enquiry completed', data });
 });
 
+export const employeeMarkStatus = asyncHandler(async (req, res) => {
+  const data = await enquiryService.employeeMarkStatus(req.params.id, req.body.status, req.user);
+  sendSuccess(res, { message: 'Status updated', data });
+});
+
 export const assignEmployee = asyncHandler(async (req, res) => {
   const data = await enquiryService.assignEmployee(req.params.id, req.body.employeeId, req.user);
   sendSuccess(res, { message: 'Employee assigned', data });
 });
 
 export const assignMediator = asyncHandler(async (req, res) => {
-  const data = await enquiryService.assignMediator(req.params.id, req.body.mediatorId, req.user);
+  const data = await enquiryService.assignMediator(req.params.id, req.body.assignedMediatorId, req.user);
   sendSuccess(res, { message: 'Mediator assigned', data });
+});
+
+export const approveStatus = asyncHandler(async (req, res) => {
+  const data = await enquiryService.approveEnquiryStatus(req.params.id, req.user);
+  sendSuccess(res, { message: 'Status approved', data });
+});
+
+export const rejectStatus = asyncHandler(async (req, res) => {
+  const data = await enquiryService.rejectEnquiryStatus(req.params.id, req.user);
+  sendSuccess(res, { message: 'Status rejected', data });
 });

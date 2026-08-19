@@ -5,12 +5,24 @@ export const idParamValidator = [param('id').isUUID().withMessage('Invalid visit
 export const createVisitValidator = [
   body('propertyId').isUUID().withMessage('Invalid property id'),
   body('buyerId').isUUID().withMessage('Invalid buyer id'),
-  body('scheduledFor').isISO8601().withMessage('Invalid scheduled date/time'),
+  body('scheduledFor')
+    .custom((value) => {
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) throw new Error('Invalid scheduled date/time');
+      return true;
+    })
+    .withMessage('Invalid scheduled date/time'),
 ];
 
 export const rescheduleValidator = [
   param('id').isUUID(),
-  body('scheduledFor').isISO8601().withMessage('Invalid scheduled date/time'),
+  body('scheduledFor')
+    .custom((value) => {
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) throw new Error('Invalid scheduled date/time');
+      return true;
+    })
+    .withMessage('Invalid scheduled date/time'),
 ];
 
 export const noteBodyValidator = [param('id').isUUID(), body('note').optional().trim()];

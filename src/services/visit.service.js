@@ -1,10 +1,11 @@
-import { sequelize, Visit, VisitHistory, Property } from '../models/index.js';
-import { PERMISSIONS } from '../constants/permissions.js';
+import { sequelize, Visit, VisitHistory, Property, User } from '../models/index.js';
 import AppError from '../utils/AppError.js';
 import { generateSequentialId } from '../utils/idGenerator.js';
 import { getPagination } from '../utils/pagination.js';
+import { buildRecordScope, assertRecordAccess } from '../utils/recordAccess.js';
 import { createNotification } from './notification.service.js';
 import { log as auditLog } from './auditLog.service.js';
+import { ROLES } from '../constants/roles.js';
 
 const INCLUDE = [{ model: Property, as: 'property' }, { model: VisitHistory, as: 'history' }];
 
@@ -34,6 +35,12 @@ export async function createVisit(data, actor) {
   const property = await Property.findByPk(data.propertyId);
   if (!property) throw new AppError('Property not found', 404, 'NOT_FOUND');
 
+  const sellerId = data.sellerId || property.sellerId;
+  if (!sellerId) throw new AppError('Property has no seller assigned', 422, 'VALIDATION_ERROR');
+
+  const isEmployee = actor?.role === 'employee';
+  const initialStatus = isEmployee ? 'pending_approval' : 'scheduled';
+
   return sequelize.transaction(async (t) => {
     const visitCode = await generateSequentialId('VIS', t);
 
@@ -42,30 +49,71 @@ export async function createVisit(data, actor) {
         visitCode,
         propertyId: data.propertyId,
         buyerId: data.buyerId,
-        sellerId: data.sellerId || property.sellerId,
+        sellerId,
         buyerName: data.buyerName,
         scheduledFor: data.scheduledFor,
         meetingLocation: data.meetingLocation,
-        status: 'scheduled',
+        status: initialStatus,
       },
       { transaction: t }
     );
 
-    await addHistory(visit.id, actor?.id || data.buyerId, 'create', null, 'scheduled', t);
+    await addHistory(visit.id, actor?.id || data.buyerId, 'create', null, initialStatus, t);
 
-    await createNotification(
-      {
-        audienceUserId: visit.sellerId,
-        type: 'visit.new',
-        relatedType: 'visit',
-        relatedId: visit.id,
-        titleEn: `New visit scheduled: ${visit.visitCode} on ${formatDateTime(visit.scheduledFor)}`,
-        titleTe: `కొత్త సందర్శన షెడ్యూల్ చేయబడింది: ${visit.visitCode} (${formatDateTime(visit.scheduledFor)})`,
-      },
-      t
-    );
+    if (!isEmployee) {
+      await createNotification(
+        {
+          audienceUserId: visit.sellerId,
+          type: 'visit.new',
+          relatedType: 'visit',
+          relatedId: visit.id,
+          titleEn: `New visit scheduled: ${visit.visitCode} on ${formatDateTime(visit.scheduledFor)}`,
+          titleTe: `కొత్త సందర్శన షెడ్యూల్ చేయబడింది: ${visit.visitCode} (${formatDateTime(visit.scheduledFor)})`,
+        },
+        t
+      );
+    } else {
+      await createNotification(
+        {
+          audienceRole: ROLES.ADMIN,
+          type: 'visit.pendingApproval',
+          relatedType: 'visit',
+          relatedId: visit.id,
+          titleEn: `${actor.name} (${actor.memberId || 'EMP'}) scheduled visit ${visit.visitCode} — pending your approval`,
+          titleTe: `${actor.name} (${actor.memberId || 'EMP'}) సందర్శన ${visit.visitCode} షెడ్యూల్ చేశారు — మీ ఆమోదం కోసం వేచి ఉంది`,
+        },
+        t
+      );
+    }
 
     await auditLog('visit.create', actor, { visitId: visit.id }, t);
+
+    /*
+     * If the buyer already has an assigned employee,
+     * auto-assign that employee to this visit.
+     */
+    if (data.buyerId) {
+      const buyer = await User.findByPk(data.buyerId, { attributes: ['assignedEmployeeId'], transaction: t });
+      if (buyer?.assignedEmployeeId) {
+        await visit.update({
+          assignedEmployeeId: buyer.assignedEmployeeId,
+          assignedBy: data.buyerId,
+        }, { transaction: t });
+
+        await createNotification(
+          {
+            audienceUserId: buyer.assignedEmployeeId,
+            type: 'visit.assigned',
+            relatedType: 'visit',
+            relatedId: visit.id,
+            titleEn: `New visit auto-assigned to you: ${visit.visitCode} on ${formatDateTime(visit.scheduledFor)}`,
+            titleTe: `కొత్త సందర్శన మీకు ఆటో-అసైన్ చేయబడింది: ${visit.visitCode}`,
+          },
+          t
+        );
+      }
+    }
+
     return Visit.findByPk(visit.id, { include: INCLUDE, transaction: t });
   });
 }
@@ -109,9 +157,7 @@ export async function listForMediator(mediatorId, query) {
 export async function listForEmployee(employee, query) {
   const { page, pageSize, limit, offset } = getPagination(query);
   const where = {};
-  if (!(employee.permissions || []).includes(PERMISSIONS.VIEW_UNASSIGNED_RECORDS)) {
-    where.assignedEmployeeId = employee.id;
-  }
+  Object.assign(where, await buildRecordScope(employee, ['buyerId', 'sellerId']));
   const { rows, count } = await Visit.findAndCountAll({ where, include: INCLUDE, order: [['scheduledFor', 'DESC']], limit, offset });
   return { items: rows, total: count, page, pageSize };
 }
@@ -126,6 +172,7 @@ export async function listForAdmin(query) {
 
 async function changeStatus(id, status, actor, action, note, extra = {}) {
   const visit = await getOrThrow(id);
+  await assertRecordAccess(actor, visit, ['buyerId', 'sellerId']);
   return sequelize.transaction(async (t) => {
     visit.status = status;
     Object.assign(visit, extra);
@@ -165,6 +212,7 @@ export async function reschedule(id, scheduledFor, note, actor) {
 
 export async function addNote(id, note, actor) {
   const visit = await getOrThrow(id);
+  await assertRecordAccess(actor, visit, ['buyerId', 'sellerId']);
   await addHistory(id, actor.id, 'note', note, visit.status);
   await auditLog('visit.addNote', actor, { visitId: id });
   return getOne(id);
@@ -172,6 +220,7 @@ export async function addNote(id, note, actor) {
 
 export async function setOutcome(id, outcome, actor) {
   const visit = await getOrThrow(id);
+  await assertRecordAccess(actor, visit, ['buyerId', 'sellerId']);
   visit.outcome = outcome;
   await visit.save();
   await addHistory(id, actor.id, 'outcome', outcome, visit.status);
@@ -207,6 +256,56 @@ export async function assign(id, { assignedMediatorId, assignedEmployeeId, assig
     }
 
     await auditLog('visit.assign', actor, { visitId: id, assignedMediatorId, assignedEmployeeId }, t);
+    return getOne(id, t);
+  });
+}
+
+export async function approveVisit(id, actor) {
+  const visit = await getOrThrow(id);
+  return sequelize.transaction(async (t) => {
+    visit.status = 'scheduled';
+    await visit.save({ transaction: t });
+
+    await addHistory(id, actor.id, 'approve', null, 'scheduled', t);
+
+    await createNotification(
+      {
+        audienceUserId: visit.assignedEmployeeId || visit.buyerId,
+        type: 'visit.approved',
+        relatedType: 'visit',
+        relatedId: visit.id,
+        titleEn: `Visit ${visit.visitCode} has been approved by admin`,
+        titleTe: `సందర్శన ${visit.visitCode} అడ్మిన్ ద్వారా ఆమోదించబడింది`,
+      },
+      t
+    );
+
+    await auditLog('visit.approve', actor, { visitId: id }, t);
+    return getOne(id, t);
+  });
+}
+
+export async function rejectVisit(id, actor, note) {
+  const visit = await getOrThrow(id);
+  return sequelize.transaction(async (t) => {
+    visit.status = 'cancelled';
+    await visit.save({ transaction: t });
+
+    await addHistory(id, actor.id, 'reject', note || 'Rejected by admin', 'cancelled', t);
+
+    await createNotification(
+      {
+        audienceUserId: visit.assignedEmployeeId || visit.buyerId,
+        type: 'visit.rejected',
+        relatedType: 'visit',
+        relatedId: visit.id,
+        titleEn: `Visit ${visit.visitCode} has been rejected by admin${note ? `: ${note}` : ''}`,
+        titleTe: `సందర్శన ${visit.visitCode} అడ్మిన్ ద్వారా తిరస్కరించబడింది${note ? `: ${note}` : ''}`,
+      },
+      t
+    );
+
+    await auditLog('visit.reject', actor, { visitId: id, note }, t);
     return getOne(id, t);
   });
 }
