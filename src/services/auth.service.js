@@ -140,6 +140,9 @@ export async function resetEmployeePassword(employeeId, newPassword) {
   }
 
   user.passwordHash = await hashPassword(newPassword);
+  // Keep tempPassword in sync so the admin panel surfaces the new password
+  // after an employee resets it from the login page.
+  user.tempPassword = newPassword;
   await user.save();
   return { success: true };
 }
