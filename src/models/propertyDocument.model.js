@@ -6,7 +6,7 @@ const PropertyDocument = sequelize.define(
   {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     propertyId: { type: DataTypes.UUID, allowNull: false },
-    type: { type: DataTypes.STRING, allowNull: false }, // identity_proof | ownership_proof
+    type: { type: DataTypes.STRING, allowNull: false }, // site | link | identityProof
     url: { type: DataTypes.TEXT, allowNull: false },
     originalName: { type: DataTypes.STRING },
   },

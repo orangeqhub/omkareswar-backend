@@ -110,4 +110,15 @@ export async function deleteExtraSpace(ruleKey, key, actor) {
   return true;
 }
 
+// One-time cleanup for media slot keys removed from the default templates.
+// Existing databases seeded from older templates may still carry these slots
+// (e.g. the old "approvalDocument" slot) until an admin clicks "Restore
+// defaults". Removing them here keeps stored rules in sync without a manual reset.
+export async function cleanupObsoleteMediaSlots() {
+  const removed = await MediaRuleCommonSlot.destroy({
+    where: { slotKey: ['approvalDocument'] },
+  });
+  return { removed };
+}
+
 export { BASE_MEDIA_RULE_TEMPLATES };

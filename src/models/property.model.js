@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
+import { computePropertyScore } from '../utils/propertyScore.js';
 
 const Property = sequelize.define(
   'Property',
@@ -106,5 +107,40 @@ const Property = sequelize.define(
     ],
   }
 );
+
+// Every property must always carry its upload date/time. These are set on
+// create/update in the service layer, and this hook guarantees the columns are
+// never null even if a property is created through another code path.
+Property.beforeCreate((property) => {
+  if (!property.postedDate) property.postedDate = new Date();
+  if (!property.updatedDate) property.updatedDate = new Date();
+});
+
+// Attach the live completion scorecard whenever a property is serialized so the
+// score is available to the seller, admin and the assigned employee everywhere
+// the property is returned (list, detail, reports, user/employee details, etc).
+Property.prototype.toJSON = function toJSON() {
+  const base = this.dataValues ? { ...this.dataValues } : { ...this };
+  for (const key of ['images', 'documents', 'seller']) {
+    const rel = this[key];
+    if (rel === undefined || rel === null) continue;
+    if (Array.isArray(rel)) {
+      base[key] = rel.map((r) => (typeof r.toJSON === 'function' ? r.toJSON() : r));
+    } else if (typeof rel.toJSON === 'function') {
+      base[key] = rel.toJSON();
+    } else {
+      base[key] = rel;
+    }
+  }
+  // Legacy rows predating the postedDate column fall back to their raw createdAt.
+  base.postedDate = base.postedDate || base.createdAt;
+  base.updatedDate = base.updatedDate || base.postedDate;
+  const score = computePropertyScore(base);
+  return {
+    ...base,
+    completionScore: score.overall,
+    completionSections: score.sections,
+  };
+};
 
 export default Property;

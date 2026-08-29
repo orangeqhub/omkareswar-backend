@@ -34,7 +34,6 @@ const landStructureRules = {
     { slotKey: 'layoutPlan', labelEn: 'Layout Plan', labelTe: 'లేఅవుట్ ప్లాన్', required: true, order: 5, captionRequired: true, primaryEligible: false },
     { slotKey: 'locationMap', labelEn: 'Location Map', labelTe: 'లొకేషన్ మ్యాప్', required: false, order: 6, captionRequired: false, primaryEligible: false },
     { slotKey: 'nearbyLandmark', labelEn: 'Nearby Landmark', labelTe: 'సమీప ప్రదేశం', required: false, order: 7, captionRequired: false, primaryEligible: false },
-    { slotKey: 'approvalDocument', labelEn: 'Approval Document', labelTe: 'ఆమోద పత్రం', required: true, order: 8, captionRequired: false, primaryEligible: false, allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'pdf'] },
   ],
   countBasedSlots: [],
   allowedExtraSpaces: [

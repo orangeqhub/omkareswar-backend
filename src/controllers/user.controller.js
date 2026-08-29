@@ -71,3 +71,8 @@ export const getUserDetail = asyncHandler(async (req, res) => {
   const data = await userService.getUserDetail(req.params.id, req.user);
   sendSuccess(res, { message: 'User detail fetched', data });
 });
+
+export const trackNumber = asyncHandler(async (req, res) => {
+  const data = await userService.trackNumber(req.params.number, req.user);
+  sendSuccess(res, { message: 'Number lookup complete', data });
+});

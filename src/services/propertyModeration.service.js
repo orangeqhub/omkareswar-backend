@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { sequelize, Property, PropertyImage, PropertyDocument, PropertyModerationHistory } from '../models/index.js';
+import { sequelize, Property, PropertyImage, PropertyDocument, PropertyModerationHistory, User } from '../models/index.js';
 import { ROLES } from '../constants/roles.js';
 import AppError from '../utils/AppError.js';
 import { getPagination } from '../utils/pagination.js';
@@ -11,6 +11,11 @@ const INCLUDE = [
   { model: PropertyImage, as: 'images' },
   { model: PropertyDocument, as: 'documents' },
   { model: PropertyModerationHistory, as: 'moderationHistory' },
+  {
+    model: User,
+    as: 'seller',
+    attributes: ['id', 'name', 'mobile', 'email', 'role', 'status'],
+  },
 ];
 
 export async function listAssigned(employee, query) {

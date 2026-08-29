@@ -6,6 +6,7 @@ import {
   PropertyDocument,
   Favourite,
   RecentlyViewedProperty,
+  User,
 } from '../models/index.js';
 import { ROLES } from '../constants/roles.js';
 import AppError from '../utils/AppError.js';
@@ -14,11 +15,108 @@ import { getPagination } from '../utils/pagination.js';
 import { buildRecordScope } from '../utils/recordAccess.js';
 import { createNotification } from './notification.service.js';
 import { log as auditLog } from './auditLog.service.js';
+import { getSettings } from './appSettings.service.js';
 
 const INCLUDE = [
   { model: PropertyImage, as: 'images' },
   { model: PropertyDocument, as: 'documents' },
 ];
+
+// Staff-facing lists include the poster's brief details so admins/employees
+// can see who added each property together with its completion score.
+const SELLER_INCLUDE = {
+  model: User,
+  as: 'seller',
+  attributes: ['id', 'name', 'mobile', 'email', 'role', 'status'],
+};
+const STAFF_INCLUDE = [...INCLUDE, SELLER_INCLUDE];
+
+/**
+ * Document images/files must stay private: visible only to the property
+ * poster, admins, and staff assigned to the property. Everyone else (e.g.
+ * any visitor on the public detail page) gets an empty documents list.
+ */
+export function canViewDocuments(property, user) {
+  if (!user || !property) return false;
+  if (user.role === ROLES.ADMIN) return true;
+  if (user.id === property.sellerId) return true;
+  const assignedId =
+    property.assignedEmployeeId ||
+    property.assignedEmployee?.id ||
+    property.assignedMediatorId ||
+    property.assignedMediator?.id;
+  return Boolean(assignedId && user.id === assignedId);
+}
+
+/**
+ * Mutates Sequelize instances so serialized responses drop the private
+ * `documents` array when the requester is not privileged.
+ */
+export function stripDocumentsForAccess(value, user) {
+  const apply = (item) => {
+    if (item && !canViewDocuments(item, user)) {
+      item.documents = [];
+    }
+  };
+  if (Array.isArray(value)) value.forEach(apply);
+  else apply(value);
+  return value;
+}
+
+/**
+ * Location-alert notifications: when a property goes live, any user who has
+ * already viewed 3+ listings in the same location (city, district or
+ * locality) gets an immediate notification, so they hear about new supply
+ * in the area they are actively searching.
+ */
+async function notifyLocationInterestedUsers(property, transaction) {
+  if (!property || !property.id) return;
+
+  // Case-insensitive location keys (DB has mixed casing: Guntur/guntur/GUNTUR).
+  // One notification per user regardless of how many location fields match.
+  const locations = [...new Set([property.city, property.district, property.locality].filter(Boolean))];
+  if (locations.length === 0) return;
+
+  const interestedUserIds = new Set();
+
+  for (const location of locations) {
+    const [rows] = await sequelize.query(
+      `SELECT rvp.user_id AS "userId"
+         FROM recently_viewed_properties rvp
+         JOIN properties p ON p.id = rvp.property_id
+        WHERE rvp.user_id <> :sellerId
+          AND (LOWER(p.city) = LOWER(:location)
+            OR LOWER(p.district) = LOWER(:location)
+            OR LOWER(p.locality) = LOWER(:location))
+        GROUP BY rvp.user_id
+       HAVING SUM(rvp.view_count) >= :minViews`,
+      {
+        replacements: {
+          location,
+          sellerId: property.sellerId || '__none__',
+          minViews: 3,
+        },
+        transaction,
+      }
+    );
+
+    for (const row of rows) interestedUserIds.add(row.userId);
+  }
+
+  for (const userId of interestedUserIds) {
+    await createNotification(
+      {
+        audienceUserId: userId,
+        type: 'property.newInLocation',
+        relatedType: 'property',
+        relatedId: property.id,
+        titleEn: `New property available in ${property.city || property.district || property.locality}: ${property.titleEn || property.propertyCode}`,
+        titleTe: `${property.city || property.district || property.locality}లో కొత్త ఆస్తి అందుబాటులో ఉంది: ${property.titleEn || property.propertyCode}`,
+      },
+      transaction
+    );
+  }
+}
 
 function buildSort(sort) {
   switch (sort) {
@@ -77,6 +175,12 @@ export async function listProperties(query) {
   if (query.city) {
     applyLocationFilter(where, query.city);
   }
+  if (query.state) {
+    where.state = { [Op.iLike]: `%${query.state}%` };
+  }
+  if (query.district) {
+    where.district = { [Op.iLike]: `%${query.district}%` };
+  }
   if (query.transactionType) where.transactionType = query.transactionType;
   if (query.sellerId) where.sellerId = query.sellerId;
   if (query.status) where.status = query.status;
@@ -88,6 +192,30 @@ export async function listProperties(query) {
   if (query.bathrooms) structureFilters.bathrooms = query.bathrooms;
   if (query.facing) structureFilters.facing = query.facing;
   if (query.furnishing) structureFilters.furnishing = query.furnishing;
+
+  // Admin-created custom filters (managed under Listing Filters in Property
+  // Fields). Each custom filter is matched against the property field key
+  // (dynamic field, structure key, or built-in column) it was bound to.
+  const settings = await getSettings();
+  const customFilterDefs = Array.isArray(settings.filterConfig && settings.filterConfig.custom)
+    ? settings.filterConfig.custom
+    : [];
+  for (const cf of customFilterDefs) {
+    const val = query[cf.id];
+    if (val === undefined || val === null || val === '') continue;
+    const key = cf.fieldKey || cf.id;
+    const textMatch = cf.type === 'text';
+    if (cf.source === 'structure') {
+      structureFilters[key] = val;
+    } else if (cf.source === 'dynamicFields') {
+      where.dynamicFields = {
+        ...(where.dynamicFields || {}),
+        [key]: textMatch ? { [Op.iLike]: `%${val}%` } : val,
+      };
+    } else {
+      where[key] = textMatch ? { [Op.iLike]: `%${val}%` } : val;
+    }
+  }
   if (Object.keys(structureFilters).length) {
     where.structure = { [Op.contains]: structureFilters };
   }
@@ -163,7 +291,17 @@ export async function recordView(id, userId) {
   await property.save();
 
   if (userId) {
-    await RecentlyViewedProperty.upsert({ userId, propertyId: id, viewedAt: new Date() });
+    let [row] = await RecentlyViewedProperty.findOrCreate({
+      where: { userId, propertyId: id },
+      defaults: { viewCount: 1, viewedAt: new Date() },
+    }).catch(async (err) => {
+      if (err.name !== 'SequelizeUniqueConstraintError') throw err;
+      return [await RecentlyViewedProperty.findOne({ where: { userId, propertyId: id } }), false];
+    });
+    if (!row) row = await RecentlyViewedProperty.create({ userId, propertyId: id, viewCount: 1, viewedAt: new Date() });
+    row.viewCount = (Number(row.viewCount) || 0) + 1;
+    row.viewedAt = new Date();
+    await row.save();
   }
   return { views: property.views };
 }
@@ -321,6 +459,10 @@ export async function submitProperty(id, actor) {
     property.postedDate = property.postedDate || new Date();
     await property.save({ transaction: t });
 
+    if (isAdmin) {
+      await notifyLocationInterestedUsers(property, t);
+    }
+
     if (!isAdmin) {
       await createNotification(
         {
@@ -347,7 +489,7 @@ export async function listSellerProperties(sellerId, query) {
 
   const { rows, count } = await Property.findAndCountAll({
     where,
-    include: INCLUDE,
+    include: STAFF_INCLUDE,
     order: [['createdAt', 'DESC']],
     limit,
     offset,
@@ -359,7 +501,7 @@ export async function listForMediator(mediatorId, query) {
   const { page, pageSize, limit, offset } = getPagination(query);
   const { rows, count } = await Property.findAndCountAll({
     where: { assignedMediatorId: mediatorId },
-    include: INCLUDE,
+    include: STAFF_INCLUDE,
     order: [['createdAt', 'DESC']],
     limit,
     offset,
@@ -375,7 +517,7 @@ export async function listForEmployee(employee, query) {
 
   const { rows, count } = await Property.findAndCountAll({
     where,
-    include: INCLUDE,
+    include: STAFF_INCLUDE,
     order: [['createdAt', 'DESC']],
     limit,
     offset,
@@ -396,10 +538,13 @@ export async function listForAdmin(query) {
       where.categorySlug = query.categorySlug;
     }
   }
+  if (query.location || query.city) {
+    applyLocationFilter(where, query.location || query.city);
+  }
 
   const { rows, count } = await Property.findAndCountAll({
     where,
-    include: INCLUDE,
+    include: STAFF_INCLUDE,
     order: [['createdAt', 'DESC']],
     limit,
     offset,
@@ -438,6 +583,10 @@ export async function moderateProperty(id, action, note, actor) {
     }
 
     await property.save({ transaction: t });
+
+    if (action === 'approve') {
+      await notifyLocationInterestedUsers(property, t);
+    }
 
     await createNotification(
       {

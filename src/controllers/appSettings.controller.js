@@ -16,6 +16,8 @@ export const getPublicSettings = asyncHandler(async (req, res) => {
       maxImageSizeMb: data.maxImageSizeMb || 5,
       propertyFields: data.propertyFields || [],
       fieldConfig: data.fieldConfig || {},
+      amenitiesByCategory: data.amenitiesByCategory || {},
+      filterConfig: data.filterConfig || {},
     },
   });
 });

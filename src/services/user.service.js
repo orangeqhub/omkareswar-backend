@@ -52,6 +52,37 @@ export async function getUser(id, actor) {
   return withAdminPassword(toSafeUser(user), user, actor);
 }
 
+/**
+ * Number tracking (admin): given a mobile number, returns every account that
+ * registered with it as their primary number plus every account that listed it
+ * as their alternative number. This surfaces the "web" of accounts connected to
+ * a single number.
+ */
+export async function trackNumber(number, actor) {
+  const normalized = String(number || '').trim();
+  if (!/^[6-9]\d{9}$/.test(normalized)) {
+    throw new AppError('Enter a valid 10 digit mobile number', 400, 'INVALID_MOBILE');
+  }
+
+  const [owner, listedAsAlternative] = await Promise.all([
+    User.findAll({
+      where: { mobile: normalized },
+      order: [['createdAt', 'ASC']],
+    }),
+    User.findAll({
+      where: { altMobile: normalized },
+      order: [['createdAt', 'ASC']],
+    }),
+  ]);
+
+  return {
+    number: normalized,
+    owner: owner.map((u) => withAdminPassword(toSafeUser(u), u, actor)),
+    listedAsAlternative: listedAsAlternative.map((u) => withAdminPassword(toSafeUser(u), u, actor)),
+    listedAsAlternativeCount: listedAsAlternative.length,
+  };
+}
+
 export async function updateUser(id, data, actor) {
   const user = await User.findByPk(id);
   if (!user) throw new AppError('User not found', 404, 'USER_NOT_FOUND');

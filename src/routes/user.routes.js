@@ -13,6 +13,7 @@ import {
   assignMediatorValidator,
   assignEmployeeValidator,
   changePasswordValidator,
+  numberParamValidator,
 } from '../validators/user.validator.js';
 
 const router = Router();
@@ -78,6 +79,16 @@ adminRouter.post(
   requireRole(ROLES.ADMIN),
   userController.createUser
 );
+
+adminRouter.get(
+  '/users/number/:number',
+  auth,
+  requireRole(ROLES.ADMIN),
+  numberParamValidator,
+  validate,
+  userController.trackNumber
+);
+
 adminRouter.delete(
   '/users/:id',
   auth,

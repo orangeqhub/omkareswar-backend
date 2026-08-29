@@ -204,10 +204,11 @@ export const SUBMISSION_META_KEYS = new Set(['role', 'customFields']);
 const baseFields = [
   { fieldKey: 'name', label: 'Full Name', fieldType: FIELD_TYPES.TEXT, isRequired: true, displayOrder: 1 },
   { fieldKey: 'mobile', label: 'Mobile', fieldType: FIELD_TYPES.PHONE, isRequired: true, displayOrder: 2, placeholder: '10 digit mobile number' },
-  { fieldKey: 'email', label: 'Email', fieldType: FIELD_TYPES.EMAIL, isRequired: false, displayOrder: 3, placeholder: 'name@example.com' },
-  { fieldKey: 'district', label: 'District', fieldType: FIELD_TYPES.TEXT, isRequired: true, displayOrder: 4 },
-  { fieldKey: 'city', label: 'City', fieldType: FIELD_TYPES.TEXT, isRequired: true, displayOrder: 5 },
-  { fieldKey: 'address', label: 'Address', fieldType: FIELD_TYPES.TEXTAREA, isRequired: true, displayOrder: 6 },
+  { fieldKey: 'altMobile', label: 'Alternate Mobile', fieldType: FIELD_TYPES.PHONE, isRequired: false, displayOrder: 3, placeholder: 'Friend or family mobile number' },
+  { fieldKey: 'email', label: 'Email', fieldType: FIELD_TYPES.EMAIL, isRequired: false, displayOrder: 4, placeholder: 'name@example.com' },
+  { fieldKey: 'district', label: 'District', fieldType: FIELD_TYPES.TEXT, isRequired: true, displayOrder: 5 },
+  { fieldKey: 'city', label: 'City', fieldType: FIELD_TYPES.TEXT, isRequired: true, displayOrder: 6 },
+  { fieldKey: 'address', label: 'Address', fieldType: FIELD_TYPES.TEXTAREA, isRequired: true, displayOrder: 7 },
 ];
 
 const employeeFields = [

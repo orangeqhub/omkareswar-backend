@@ -8,6 +8,7 @@ const RecentlyViewedProperty = sequelize.define(
     userId: { type: DataTypes.UUID, allowNull: false },
     propertyId: { type: DataTypes.UUID, allowNull: false },
     viewedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
+    viewCount: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
   },
   {
     tableName: 'recently_viewed_properties',

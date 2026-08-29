@@ -43,3 +43,7 @@ export const changePasswordValidator = [
   body('currentPassword').isString().notEmpty().withMessage('Current password is required'),
   body('newPassword').isString().isLength({ min: 6 }).withMessage('New password must be at least 6 characters'),
 ];
+
+export const numberParamValidator = [
+  param('number').matches(/^[6-9]\d{9}$/).withMessage('Invalid mobile number'),
+];

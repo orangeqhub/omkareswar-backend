@@ -5,26 +5,31 @@ import * as categoryService from '../services/category.service.js';
 
 export const list = asyncHandler(async (req, res) => {
   const { items, total, page, pageSize } = await propertyService.listProperties(req.query);
+  propertyService.stripDocumentsForAccess(items, req.user);
   sendList(res, { items, total, page, pageSize });
 });
 
 export const getOne = asyncHandler(async (req, res) => {
   const data = await propertyService.getPropertyById(req.params.id);
+  propertyService.stripDocumentsForAccess(data, req.user);
   sendSuccess(res, { message: 'Property fetched', data });
 });
 
 export const featured = asyncHandler(async (req, res) => {
   const data = await propertyService.getFeatured(req.query.limit, req.query.city);
+  propertyService.stripDocumentsForAccess(data, req.user);
   sendSuccess(res, { message: 'Featured properties fetched', data });
 });
 
 export const latest = asyncHandler(async (req, res) => {
   const data = await propertyService.getLatest(req.query.limit, req.query.city);
+  propertyService.stripDocumentsForAccess(data, req.user);
   sendSuccess(res, { message: 'Latest properties fetched', data });
 });
 
 export const related = asyncHandler(async (req, res) => {
   const data = await propertyService.getRelated(req.params.id, req.query.limit);
+  propertyService.stripDocumentsForAccess(data, req.user);
   sendSuccess(res, { message: 'Related properties fetched', data });
 });
 
@@ -40,6 +45,7 @@ export const toggleFavourite = asyncHandler(async (req, res) => {
 
 export const listFavourites = asyncHandler(async (req, res) => {
   const data = await propertyService.listFavourites(req.params.userId);
+  propertyService.stripDocumentsForAccess(data, req.user);
   sendSuccess(res, { message: 'Favourites fetched', data });
 });
 

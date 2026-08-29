@@ -4,6 +4,7 @@ import app from './app.js';
 import sequelize from './config/database.js';
 import { initSocket } from './sockets/index.js';
 import { ensureDefaultForms } from './services/registrationForm.service.js';
+import { cleanupObsoleteMediaSlots } from './services/mediaRule.service.js';
 
 dotenv.config();
 
@@ -45,9 +46,15 @@ async function start() {
     const formSeed = await ensureDefaultForms();
     console.log(`Registration form defaults ${formSeed.created ? 'seeded' : 'verified'}`);
 
+    // 6. Obsolete media rule slots removed (idempotent)
+    const obsoleteCleanup = await cleanupObsoleteMediaSlots();
+    if (obsoleteCleanup.removed > 0) {
+      console.log(`Removed ${obsoleteCleanup.removed} obsolete media slot(s)`);
+    }
+
     // Start server
     httpServer.listen(PORT, () => {
-      // 6. Server listening
+      // 7. Server listening
       console.log('Server listening');
       console.log(`OMKARESWAR REALTORS backend running on port ${PORT}`);
     });
