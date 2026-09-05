@@ -163,7 +163,22 @@ export async function listProperties(query) {
   const { page, pageSize, limit, offset } = getPagination(query);
   const where = {};
 
-  if (query.categorySlug) {
+  if (query.categorySlugs) {
+    const slugs = Array.isArray(query.categorySlugs)
+      ? query.categorySlugs
+      : String(query.categorySlugs).split(',').map(s => s.trim()).filter(Boolean);
+    const expanded = [];
+    for (const s of slugs) {
+      if (s === 'apartments') {
+        expanded.push('apartments', 'flats', 'gated-communities');
+      } else if (s === 'commercial-properties') {
+        expanded.push('commercial-properties', 'offices', 'shops', 'commercial-buildings');
+      } else {
+        expanded.push(s);
+      }
+    }
+    where.categorySlug = { [Op.in]: [...new Set(expanded)] };
+  } else if (query.categorySlug) {
     if (query.categorySlug === 'apartments') {
       where.categorySlug = { [Op.in]: ['apartments', 'flats', 'gated-communities'] };
     } else if (query.categorySlug === 'commercial-properties') {
@@ -368,12 +383,12 @@ async function syncDocuments(propertyId, documents, transaction) {
 
 const DRAFT_FIELDS = [
   'categorySlug', 'ruleKey', 'titleEn', 'titleTe', 'descriptionEn', 'descriptionTe', 'transactionType',
-  'price', 'priceNegotiable', 'area', 'areaUnit', 'state', 'district', 'city', 'mandal', 'village',
+  'price', 'priceNegotiable', 'govtValue', 'totalAmount', 'area', 'areaUnit', 'state', 'district', 'city', 'mandal', 'village',
   'locality', 'landmark', 'pincode', 'address', 'locationEn', 'locationTe', 'mapLat', 'mapLng',
   'ventureName', 'structure', 'plotDetails', 'amenities', 'contactName', 'contactPhone',
   'preferWhatsapp', 'preferCall', 'hidePhone',
   'villageName', 'surveyNumber', 'acres', 'acreValuation', 'totalSaleValue', 'conversion',
-  'passbook', 'adangal', 'rsrCopy', 'documentationNumber', 'landDocumentHistory', 'ownerName',
+  'passbook', 'adangal', 'rsrCopy', 'documentationNumber', 'documentationYear', 'landDocumentHistory', 'ownerName',
   'town', 'street', 'roadFacing', 'plotFacing', 'liftFacility', 'builtUpArea', 'groundSquareYards', 'facing',
   'dynamicFields',
 ];
@@ -528,6 +543,14 @@ export async function listForEmployee(employee, query) {
 export async function listForAdmin(query) {
   const { page, pageSize, limit, offset } = getPagination(query);
   const where = {};
+  if (query.propertyId) {
+    // Exact/partial search by Property ID (propertyCode), plus exact UUID match
+    const term = String(query.propertyId).trim();
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const matches = [{ propertyCode: { [Op.iLike]: `%${term}%` } }];
+    if (uuidRe.test(term)) matches.push({ id: term });
+    where[Op.or] = matches;
+  }
   if (query.status) where.status = query.status;
   if (query.categorySlug) {
     if (query.categorySlug === 'apartments') {
