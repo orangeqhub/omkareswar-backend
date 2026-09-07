@@ -8,6 +8,7 @@ import {
   idParamValidator,
   updateStatusValidator,
   createEmployeeValidator,
+  createManagerValidator,
   updatePermissionsValidator,
   updateEmployeeStatusValidator,
   assignMediatorValidator,
@@ -25,7 +26,7 @@ router.post(
   validate,
   userController.changeOwnPassword
 );
-router.get('/', auth, requireRole(ROLES.ADMIN, ROLES.EMPLOYEE, ROLES.MEDIATOR), userController.listUsers);
+router.get('/', auth, requireRole(ROLES.ADMIN, ROLES.MANAGER, ROLES.EMPLOYEE, ROLES.MEDIATOR), userController.listUsers);
 router.get('/:id', auth, idParamValidator, validate, userController.getUser);
 router.patch('/:id', auth, idParamValidator, validate, userController.updateUser);
 router.patch(
@@ -64,6 +65,30 @@ adminRouter.patch(
   updateEmployeeStatusValidator,
   validate,
   userController.updateEmployeeStatus
+);
+adminRouter.post(
+  '/managers',
+  auth,
+  requireRole(ROLES.ADMIN),
+  createManagerValidator,
+  validate,
+  userController.createManager
+);
+adminRouter.put(
+  '/managers/:id/permissions',
+  auth,
+  requireRole(ROLES.ADMIN),
+  updatePermissionsValidator,
+  validate,
+  userController.updateManagerPermissions
+);
+adminRouter.patch(
+  '/managers/:id/status',
+  auth,
+  requireRole(ROLES.ADMIN),
+  updateEmployeeStatusValidator,
+  validate,
+  userController.updateManagerStatus
 );
 adminRouter.patch(
   '/users/:id/assign-mediator',

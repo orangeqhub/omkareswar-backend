@@ -9,13 +9,14 @@ export const getSettings = asyncHandler(async (req, res) => {
 
 export const getPublicSettings = asyncHandler(async (req, res) => {
   const data = await settingsService.getSettings();
+  const role = ['buyer', 'seller', 'employee', 'mediator'].includes(req.query.role) ? req.query.role : null;
   sendSuccess(res, {
     message: 'Public settings fetched',
     data: {
       customLocations: data.customLocations || [],
       maxImageSizeMb: data.maxImageSizeMb || 5,
-      propertyFields: data.propertyFields || [],
-      fieldConfig: data.fieldConfig || {},
+      propertyFields: role ? (data.propertyFieldsByRole?.[role] || data.propertyFields || []) : (data.propertyFields || []),
+      fieldConfig: role ? (data.fieldConfigByRole?.[role] || data.fieldConfig || {}) : (data.fieldConfig || {}),
       amenitiesByCategory: data.amenitiesByCategory || {},
       filterConfig: data.filterConfig || {},
     },

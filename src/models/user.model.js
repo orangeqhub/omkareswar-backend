@@ -10,7 +10,7 @@ const User = sequelize.define(
   {
     id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     role: {
-      type: DataTypes.ENUM('admin', 'employee', 'buyer', 'seller', 'mediator'),
+      type: DataTypes.ENUM('admin', 'manager', 'employee', 'buyer', 'seller', 'mediator'),
       allowNull: false,
     },
     memberId: { type: DataTypes.STRING, unique: true }, // ADM-/EMP-/BUY-/SEL-/MED-YYYY-000001

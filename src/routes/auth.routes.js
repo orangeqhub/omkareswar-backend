@@ -8,8 +8,10 @@ import {
   verifyOtpValidator,
   adminLoginValidator,
   employeeLoginValidator,
+  managerLoginValidator,
   refreshTokenValidator,
   resetEmployeePasswordValidator,
+  resetManagerPasswordValidator,
   resetAdminPasswordValidator,
 } from '../validators/auth.validator.js';
 
@@ -19,8 +21,10 @@ router.post('/otp/request', otpLimiter, requestOtpValidator, validate, authContr
 router.post('/otp/verify', authLimiter, verifyOtpValidator, validate, authController.verifyOtp);
 router.post('/admin/login', authLimiter, adminLoginValidator, validate, authController.adminLogin);
 router.post('/employee/login', authLimiter, employeeLoginValidator, validate, authController.employeeLogin);
+router.post('/manager/login', authLimiter, managerLoginValidator, validate, authController.managerLogin);
 router.post('/refresh', authLimiter, refreshTokenValidator, validate, authController.refresh);
 router.post('/employee/reset-password', authLimiter, resetEmployeePasswordValidator, validate, authController.resetEmployeePassword);
+router.post('/manager/reset-password', authLimiter, resetManagerPasswordValidator, validate, authController.resetManagerPassword);
 router.post('/admin/reset-password', authLimiter, resetAdminPasswordValidator, validate, authController.resetAdminPassword);
 router.get('/me', auth, authController.getMe);
 router.post('/logout', auth, authController.logout);

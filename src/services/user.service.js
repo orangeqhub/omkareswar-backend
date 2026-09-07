@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 import { sequelize, User, Enquiry, Visit, FollowUp, Property, AuditLog } from '../models/index.js';
 import { ROLES } from '../constants/roles.js';
-import { ASSIGNABLE_EMPLOYEE_PERMISSIONS } from '../constants/permissions.js';
+import { ASSIGNABLE_EMPLOYEE_PERMISSIONS, ASSIGNABLE_MANAGER_PERMISSIONS } from '../constants/permissions.js';
 import AppError from '../utils/AppError.js';
 import { generateSequentialId } from '../utils/idGenerator.js';
 import { hashPassword, comparePassword } from '../utils/password.js';
@@ -238,6 +238,78 @@ export async function updateEmployeeStatus(id, status, actor) {
   return toSafeUser(employee);
 }
 
+export async function createManager(data, actor) {
+  const name = (data.name || '').trim();
+  const mobile = String(data.mobile || '').replace(/[\s\-\+\(\)]/g, '').replace(/^91/, '');
+  const email = (data.email || '').trim();
+  const password = data.password;
+  const district = (data.district || '').trim();
+  const city = (data.city || '').trim();
+  const address = (data.address || '').trim();
+
+  if (!name) throw new AppError('Name is required', 400, 'VALIDATION_ERROR');
+  if (!mobile || mobile.length < 10) throw new AppError('A valid 10-digit mobile number is required', 400, 'VALIDATION_ERROR');
+  if (!password || password.length < 6) throw new AppError('Password must be at least 6 characters', 400, 'VALIDATION_ERROR');
+
+  const existing = await User.findOne({ where: { mobile } });
+  if (existing) throw new AppError('An account already exists with this mobile number', 409, 'MOBILE_EXISTS');
+
+  const permissions = (data.permissions || []).filter((p) => ASSIGNABLE_MANAGER_PERMISSIONS.includes(p));
+
+  return sequelize.transaction(async (t) => {
+    const memberId = await generateSequentialId('MGR', t);
+    const passwordHash = await hashPassword(password);
+
+    const manager = await User.create(
+      {
+        role: ROLES.MANAGER,
+        memberId,
+        name,
+        mobile,
+        email: email || null,
+        district: district || null,
+        city: city || null,
+        address: address || null,
+        passwordHash,
+        tempPassword: password,
+        permissions,
+        status: 'active',
+        approvedBy: actor.id,
+        approvedAt: new Date(),
+      },
+      { transaction: t }
+    );
+
+    await auditLog('manager.create', actor, { managerId: manager.id, memberId }, t);
+    const safe = toSafeUser(manager);
+    if (actor?.role === ROLES.ADMIN) {
+      safe.temporaryPassword = password;
+    }
+    return safe;
+  });
+}
+
+export async function updateManagerPermissions(id, permissions, actor) {
+  const manager = await User.findOne({ where: { id, role: ROLES.MANAGER } });
+  if (!manager) throw new AppError('Manager not found', 404, 'USER_NOT_FOUND');
+
+  const filtered = (permissions || []).filter((p) => ASSIGNABLE_MANAGER_PERMISSIONS.includes(p));
+  manager.permissions = filtered;
+  await manager.save();
+  await auditLog('manager.permissionsUpdated', actor, { managerId: id, permissions: filtered });
+  return toSafeUser(manager);
+}
+
+export async function updateManagerStatus(id, status, actor) {
+  const manager = await User.findOne({ where: { id, role: ROLES.MANAGER } });
+  if (!manager) throw new AppError('Manager not found', 404, 'USER_NOT_FOUND');
+
+  manager.status = status;
+  await manager.save();
+  await auditLog('manager.statusUpdate', actor, { managerId: id, status });
+  return toSafeUser(manager);
+}
+
 export async function assignMediator(id, mediatorId, actor) {
   const user = await User.findByPk(id);
   if (!user) throw new AppError('User not found', 404, 'USER_NOT_FOUND');
@@ -318,36 +390,38 @@ export async function createUser(data, actor) {
   const existing = await User.findOne({ where: { mobile: data.mobile } });
   if (existing) throw new AppError('An account already exists with this mobile number', 409, 'MOBILE_EXISTS');
 
-  let memberId = null;
-  if (data.role === ROLES.MEDIATOR) {
-    memberId = await generateSequentialId('MED', null);
-  } else if (data.role === ROLES.EMPLOYEE) {
-    memberId = await generateSequentialId('EMP', null);
-  }
+  return sequelize.transaction(async (t) => {
+    let memberId = null;
+    if (data.role === ROLES.MEDIATOR) {
+      memberId = await generateSequentialId('MED', t);
+    } else if (data.role === ROLES.EMPLOYEE) {
+      memberId = await generateSequentialId('EMP', t);
+    }
 
-  const passwordHash = data.password ? await hashPassword(data.password) : null;
+    const passwordHash = data.password ? await hashPassword(data.password) : null;
 
-  const user = await User.create({
-    role: data.role,
-    memberId,
-    name: data.name,
-    mobile: data.mobile,
-    altMobile: data.altMobile,
-    email: data.email,
-    passwordHash,
-    tempPassword: data.password || null,
-    district: data.district,
-    city: data.city,
-    address: data.address,
-    status: 'approved',
+    const user = await User.create({
+      role: data.role,
+      memberId,
+      name: data.name,
+      mobile: data.mobile,
+      altMobile: data.altMobile,
+      email: data.email,
+      passwordHash,
+      tempPassword: data.password || null,
+      district: data.district,
+      city: data.city,
+      address: data.address,
+      status: 'approved',
+    }, { transaction: t });
+
+    await auditLog('user.create', actor, { userId: user.id }, t);
+    const safe = toSafeUser(user);
+    if (data.password && actor?.role === ROLES.ADMIN) {
+      safe.temporaryPassword = data.password;
+    }
+    return safe;
   });
-
-  await auditLog('user.create', actor, { userId: user.id }, null);
-  const safe = toSafeUser(user);
-  if (data.password && actor?.role === ROLES.ADMIN) {
-    safe.temporaryPassword = data.password;
-  }
-  return safe;
 }
 
 export async function getEmployeeDetail(id, actor) {

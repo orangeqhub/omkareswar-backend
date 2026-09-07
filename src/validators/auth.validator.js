@@ -19,12 +19,22 @@ export const employeeLoginValidator = [
   body('password').notEmpty().withMessage('Password is required'),
 ];
 
+export const managerLoginValidator = [
+  body('managerId').trim().notEmpty().withMessage('Manager ID is required'),
+  body('password').notEmpty().withMessage('Password is required'),
+];
+
 export const refreshTokenValidator = [
   body('refreshToken').trim().notEmpty().withMessage('Refresh token is required'),
 ];
 
 export const resetEmployeePasswordValidator = [
   body('employeeId').trim().notEmpty().withMessage('Employee ID is required'),
+  body('newPassword').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+];
+
+export const resetManagerPasswordValidator = [
+  body('managerId').trim().notEmpty().withMessage('Manager ID is required'),
   body('newPassword').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
 ];
 

@@ -42,6 +42,21 @@ export const updateEmployeeStatus = asyncHandler(async (req, res) => {
   sendSuccess(res, { message: 'Employee status updated', data });
 });
 
+export const createManager = asyncHandler(async (req, res) => {
+  const data = await userService.createManager(req.body, req.user);
+  sendSuccess(res, { message: 'Manager created', data, statusCode: 201 });
+});
+
+export const updateManagerPermissions = asyncHandler(async (req, res) => {
+  const data = await userService.updateManagerPermissions(req.params.id, req.body.permissions, req.user);
+  sendSuccess(res, { message: 'Permissions updated', data });
+});
+
+export const updateManagerStatus = asyncHandler(async (req, res) => {
+  const data = await userService.updateManagerStatus(req.params.id, req.body.status, req.user);
+  sendSuccess(res, { message: 'Manager status updated', data });
+});
+
 export const assignMediator = asyncHandler(async (req, res) => {
   const data = await userService.assignMediator(req.params.id, req.body.mediatorId, req.user);
   sendSuccess(res, { message: 'Mediator assigned', data });

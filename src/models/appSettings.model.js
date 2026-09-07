@@ -12,6 +12,8 @@ const AppSettings = sequelize.define(
     customLocations: { type: DataTypes.JSON, defaultValue: [] },
     propertyFields: { type: DataTypes.JSON, defaultValue: [] },
     fieldConfig: { type: DataTypes.JSON, defaultValue: {} },
+    propertyFieldsByRole: { type: DataTypes.JSON, defaultValue: {} },
+    fieldConfigByRole: { type: DataTypes.JSON, defaultValue: {} },
     filterConfig: { type: DataTypes.JSON, defaultValue: {} },
   },
   { tableName: 'app_settings' }

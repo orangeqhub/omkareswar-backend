@@ -101,6 +101,22 @@ export async function loginEmployee(employeeId, password) {
   return { user: toSafeUser(user), ...tokens };
 }
 
+export async function loginManager(managerId, password) {
+  const user = await User.findOne({ where: { memberId: managerId, role: ROLES.MANAGER } });
+  if (!user) throw new AppError('Invalid login credentials', 401, 'INVALID_CREDENTIALS');
+
+  const ok = await comparePassword(password, user.passwordHash);
+  if (!ok) throw new AppError('Invalid login credentials', 401, 'INVALID_CREDENTIALS');
+
+  assertLoginableStatus(user);
+
+  user.lastLoginAt = new Date();
+  await user.save();
+
+  const tokens = issueTokens(user);
+  return { user: toSafeUser(user), ...tokens };
+}
+
 export async function refreshAccessToken(refreshToken) {
   let payload;
   try {
@@ -142,6 +158,33 @@ export async function resetEmployeePassword(employeeId, newPassword) {
   user.passwordHash = await hashPassword(newPassword);
   // Keep tempPassword in sync so the admin panel surfaces the new password
   // after an employee resets it from the login page.
+  user.tempPassword = newPassword;
+  await user.save();
+  return { success: true };
+}
+
+export async function resetManagerPassword(managerId, newPassword) {
+  const conditions = [
+    { memberId: managerId },
+    { mobile: managerId },
+    { email: managerId },
+  ];
+  if (UUID_REGEX.test(managerId)) {
+    conditions.push({ id: managerId });
+  }
+
+  const user = await User.findOne({
+    where: {
+      role: ROLES.MANAGER,
+      [Op.or]: conditions,
+    },
+  });
+
+  if (!user) {
+    throw new AppError('Manager account not found', 404, 'USER_NOT_FOUND');
+  }
+
+  user.passwordHash = await hashPassword(newPassword);
   user.tempPassword = newPassword;
   await user.save();
   return { success: true };

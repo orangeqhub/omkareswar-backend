@@ -18,6 +18,14 @@ export const createEmployeeValidator = [
   body('customFields').optional({ checkFalsy: true }).isObject().withMessage('customFields must be an object'),
 ];
 
+export const createManagerValidator = [
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('mobile').customSanitizer(v => String(v || '').replace(/[\s\-\+\(\)]/g, '').replace(/^91/, '')).isLength({ min: 10, max: 10 }).isNumeric().withMessage('Enter a valid 10-digit mobile number'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('email').optional({ checkFalsy: true }).isEmail().withMessage('Enter a valid email'),
+  body('permissions').optional().isArray().withMessage('Permissions must be an array'),
+];
+
 export const updatePermissionsValidator = [
   param('id').isUUID().withMessage('Invalid id'),
   body('permissions').isArray().withMessage('Permissions must be an array'),

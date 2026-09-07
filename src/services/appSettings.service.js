@@ -12,6 +12,42 @@ const DEFAULT_FIELDS = [
   { id: 'f_street', label: 'Street', type: 'text', category: 'residential', required: false },
 ];
 
+const PROPERTY_FIELD_ROLES = ['buyer', 'seller', 'employee', 'mediator'];
+
+function ensureRoleFieldConfig(settings) {
+  const storedFields = settings.propertyFieldsByRole && typeof settings.propertyFieldsByRole === 'object'
+    ? settings.propertyFieldsByRole
+    : {};
+  const storedConfig = settings.fieldConfigByRole && typeof settings.fieldConfigByRole === 'object'
+    ? settings.fieldConfigByRole
+    : {};
+  const propertyFieldsByRole = { ...storedFields };
+  const fieldConfigByRole = { ...storedConfig };
+  let changed = false;
+
+  for (const role of PROPERTY_FIELD_ROLES) {
+    if (!Array.isArray(propertyFieldsByRole[role])) {
+      propertyFieldsByRole[role] = Array.isArray(settings.propertyFields) && settings.propertyFields.length
+        ? settings.propertyFields
+        : DEFAULT_FIELDS;
+      changed = true;
+    }
+    if (!fieldConfigByRole[role] || typeof fieldConfigByRole[role] !== 'object' || Array.isArray(fieldConfigByRole[role])) {
+      fieldConfigByRole[role] = settings.fieldConfig && typeof settings.fieldConfig === 'object'
+        ? settings.fieldConfig
+        : {};
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    settings.propertyFieldsByRole = propertyFieldsByRole;
+    settings.fieldConfigByRole = fieldConfigByRole;
+    return true;
+  }
+  return false;
+}
+
 // Default filters shown on the public property listing page. Admins can
 // enable/disable and reorder these; the order value drives the display order.
 const DEFAULT_FILTER_CONFIG = {
@@ -79,6 +115,10 @@ export async function getSettings() {
     settings = await AppSettings.create({ id: 1, propertyFields: DEFAULT_FIELDS });
   } else if (!settings.propertyFields || settings.propertyFields.length === 0) {
     settings.propertyFields = DEFAULT_FIELDS;
+    await settings.save();
+  }
+
+  if (ensureRoleFieldConfig(settings)) {
     await settings.save();
   }
 

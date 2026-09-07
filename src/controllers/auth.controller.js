@@ -23,6 +23,11 @@ export const employeeLogin = asyncHandler(async (req, res) => {
   sendSuccess(res, { message: 'Login successful', data });
 });
 
+export const managerLogin = asyncHandler(async (req, res) => {
+  const data = await authService.loginManager(req.body.managerId, req.body.password);
+  sendSuccess(res, { message: 'Login successful', data });
+});
+
 export const getMe = asyncHandler(async (req, res) => {
   sendSuccess(res, { message: 'Session fetched', data: { user: toSafeUser(req.user) } });
 });
@@ -40,6 +45,11 @@ export const refresh = asyncHandler(async (req, res) => {
 export const resetEmployeePassword = asyncHandler(async (req, res) => {
   const data = await authService.resetEmployeePassword(req.body.employeeId, req.body.newPassword);
   sendSuccess(res, { message: 'Password updated successfully', data });
+});
+
+export const resetManagerPassword = asyncHandler(async (req, res) => {
+  const data = await authService.resetManagerPassword(req.body.managerId, req.body.newPassword);
+  sendSuccess(res, { message: 'Manager password updated successfully', data });
 });
 
 export const resetAdminPassword = asyncHandler(async (req, res) => {

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import * as propertyController from '../controllers/property.controller.js';
 import auth from '../middleware/auth.js';
 import optionalAuth from '../middleware/optionalAuth.js';
-import { requireRole, requirePermission } from '../middleware/permission.js';
+import { requireRole, requirePermission, requireManagerPermission } from '../middleware/permission.js';
 import validate from '../middleware/validate.js';
 import { ROLES } from '../constants/roles.js';
 import { PERMISSIONS } from '../constants/permissions.js';
@@ -21,7 +21,15 @@ router.post('/:id/view', optionalAuth, idParamValidator, validate, propertyContr
 router.post('/:id/submit', auth, requireRole(ROLES.SELLER, ROLES.BUYER, ROLES.MEDIATOR, ROLES.ADMIN, ROLES.EMPLOYEE), idParamValidator, validate, propertyController.submit);
 router.patch('/:id', auth, idParamValidator, validate, propertyController.update);
 router.delete('/:id', auth, idParamValidator, validate, propertyController.remove);
-router.patch('/:id/assign', auth, requireRole(ROLES.ADMIN), assignValidator, validate, propertyController.assign);
+router.patch(
+  '/:id/assign',
+  auth,
+  requireRole(ROLES.ADMIN, ROLES.MANAGER),
+  requireManagerPermission(PERMISSIONS.MANAGER_PROPERTIES_VIEW),
+  assignValidator,
+  validate,
+  propertyController.assign
+);
 export default router;
 
 // ---- /api/sellers/:sellerId/properties ----
@@ -53,9 +61,10 @@ employeeRouter.get(
 );
 
 // ---- /api/admin/properties ----
+const managerPropertiesGuard = requireManagerPermission(PERMISSIONS.MANAGER_PROPERTIES_VIEW);
 export const adminRouter = Router();
-adminRouter.get('/', auth, requireRole(ROLES.ADMIN), propertyController.adminProperties);
-adminRouter.post('/:id/moderate', auth, requireRole(ROLES.ADMIN), moderateValidator, validate, propertyController.moderate);
+adminRouter.get('/', auth, requireRole(ROLES.ADMIN, ROLES.MANAGER), managerPropertiesGuard, propertyController.adminProperties);
+adminRouter.post('/:id/moderate', auth, requireRole(ROLES.ADMIN, ROLES.MANAGER), managerPropertiesGuard, moderateValidator, validate, propertyController.moderate);
 adminRouter.patch('/:id/approve', auth, requireRole(ROLES.ADMIN), idParamValidator, validate, propertyController.approve);
 adminRouter.patch('/:id/reject', auth, requireRole(ROLES.ADMIN), idParamValidator, validate, propertyController.reject);
 adminRouter.patch(
@@ -82,6 +91,6 @@ adminRouter.patch(
   validate,
   propertyController.assignMediator
 );
-adminRouter.patch('/:id/feature', auth, requireRole(ROLES.ADMIN), idParamValidator, validate, propertyController.feature);
-adminRouter.patch('/:id/verify', auth, requireRole(ROLES.ADMIN), idParamValidator, validate, propertyController.verify);
-adminRouter.patch('/:id/mark-sold', auth, requireRole(ROLES.ADMIN), idParamValidator, validate, propertyController.markSold);
+adminRouter.patch('/:id/feature', auth, requireRole(ROLES.ADMIN, ROLES.MANAGER), managerPropertiesGuard, idParamValidator, validate, propertyController.feature);
+adminRouter.patch('/:id/verify', auth, requireRole(ROLES.ADMIN, ROLES.MANAGER), managerPropertiesGuard, idParamValidator, validate, propertyController.verify);
+adminRouter.patch('/:id/mark-sold', auth, requireRole(ROLES.ADMIN, ROLES.MANAGER), managerPropertiesGuard, idParamValidator, validate, propertyController.markSold);

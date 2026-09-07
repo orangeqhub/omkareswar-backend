@@ -28,3 +28,22 @@ export function requirePermission(permission) {
     next();
   };
 }
+
+// Restricts a route to managers holding a specific permission. Admin and other
+// roles pass through unaffected — the outer requireRole gate decides who reaches
+// here. Must run after auth().
+export function requireManagerPermission(...permissions) {
+  return (req, res, next) => {
+    if (!req.user) {
+      return next(new AppError('Authentication required', 401, 'NO_TOKEN'));
+    }
+    if (req.user.role !== ROLES.MANAGER) {
+      return next();
+    }
+    const userPermissions = req.user.permissions || [];
+    if (!permissions.some((p) => userPermissions.includes(p))) {
+      return next(new AppError('Missing required permission', 403, 'PERMISSION_DENIED'));
+    }
+    next();
+  };
+}

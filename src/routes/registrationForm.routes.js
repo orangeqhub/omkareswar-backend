@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import * as controller from '../controllers/registrationForm.controller.js';
 import auth from '../middleware/auth.js';
-import { requireRole } from '../middleware/permission.js';
+import { requireRole, requireManagerPermission } from '../middleware/permission.js';
 import validate from '../middleware/validate.js';
 import { ROLES } from '../constants/roles.js';
+import { PERMISSIONS } from '../constants/permissions.js';
 import {
   formTypeParamValidator,
   fieldIdParamValidator,
@@ -20,10 +21,11 @@ router.get('/:formType', formTypeParamValidator, validate, controller.getPublicF
 
 export default router;
 
-// Admin-only config endpoints.
+// Admin/Manager config endpoints.
 export const adminRouter = Router();
 adminRouter.use(auth);
-adminRouter.use(requireRole(ROLES.ADMIN));
+adminRouter.use(requireRole(ROLES.ADMIN, ROLES.MANAGER));
+adminRouter.use(requireManagerPermission(PERMISSIONS.MANAGER_REGISTRATION_FORMS_VIEW));
 
 adminRouter.get('/', controller.listForms);
 adminRouter.get('/:formType', formTypeParamValidator, validate, controller.getForm);

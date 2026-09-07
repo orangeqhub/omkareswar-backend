@@ -2,7 +2,7 @@ import { Router } from 'express';
 import * as enquiryController from '../controllers/enquiry.controller.js';
 import * as callNoteController from '../controllers/callNote.controller.js';
 import auth from '../middleware/auth.js';
-import { requireRole, requirePermission } from '../middleware/permission.js';
+import { requireRole, requirePermission, requireManagerPermission } from '../middleware/permission.js';
 import validate from '../middleware/validate.js';
 import { ROLES } from '../constants/roles.js';
 import { PERMISSIONS } from '../constants/permissions.js';
@@ -76,12 +76,14 @@ employeeRouter.patch(
 );
 
 // ---- /api/admin/enquiries ----
+const managerEnquiriesGuard = requireManagerPermission(PERMISSIONS.MANAGER_ENQUIRIES_VIEW);
 export const adminRouter = Router();
-adminRouter.get('/', auth, requireRole(ROLES.ADMIN, ROLES.MEDIATOR), enquiryController.adminEnquiries);
+adminRouter.get('/', auth, requireRole(ROLES.ADMIN, ROLES.MEDIATOR, ROLES.MANAGER), managerEnquiriesGuard, enquiryController.adminEnquiries);
 adminRouter.patch(
   '/:id/assign-employee',
   auth,
-  requireRole(ROLES.ADMIN),
+  requireRole(ROLES.ADMIN, ROLES.MANAGER),
+  managerEnquiriesGuard,
   assignValidator,
   validate,
   enquiryController.assignEmployee
@@ -89,10 +91,27 @@ adminRouter.patch(
 adminRouter.patch(
   '/:id/assign-mediator',
   auth,
-  requireRole(ROLES.ADMIN),
+  requireRole(ROLES.ADMIN, ROLES.MANAGER),
+  managerEnquiriesGuard,
   assignValidator,
   validate,
   enquiryController.assignMediator
 );
-adminRouter.post('/:id/approve-status', auth, requireRole(ROLES.ADMIN), idParamValidator, validate, enquiryController.approveStatus);
-adminRouter.post('/:id/reject-status', auth, requireRole(ROLES.ADMIN), idParamValidator, validate, enquiryController.rejectStatus);
+adminRouter.post(
+  '/:id/approve-status',
+  auth,
+  requireRole(ROLES.ADMIN, ROLES.MANAGER),
+  managerEnquiriesGuard,
+  idParamValidator,
+  validate,
+  enquiryController.approveStatus
+);
+adminRouter.post(
+  '/:id/reject-status',
+  auth,
+  requireRole(ROLES.ADMIN, ROLES.MANAGER),
+  managerEnquiriesGuard,
+  idParamValidator,
+  validate,
+  enquiryController.rejectStatus
+);
