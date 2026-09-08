@@ -393,7 +393,28 @@ const DRAFT_FIELDS = [
   'dynamicFields',
 ];
 
+const NUMERIC_FIELDS = [
+  'price', 'govtValue', 'totalAmount', 'area', 'mapLat', 'mapLng',
+  'acres', 'acreValuation', 'totalSaleValue', 'builtUpArea', 'groundSquareYards',
+];
+
+const BOOLEAN_FIELDS = [
+  'priceNegotiable', 'conversion', 'liftFacility', 'preferWhatsapp', 'preferCall', 'hidePhone',
+];
+
+function normalizeEmptyStrings(data) {
+  const out = { ...data };
+  for (const field of NUMERIC_FIELDS) {
+    if (out[field] === '') out[field] = null;
+  }
+  for (const field of BOOLEAN_FIELDS) {
+    if (out[field] === '') out[field] = null;
+  }
+  return out;
+}
+
 export async function createDraft(sellerId, data) {
+  data = normalizeEmptyStrings(data);
   return sequelize.transaction(async (t) => {
     const propertyCode = await generateSequentialId('PROP', t, 4);
 
@@ -432,6 +453,7 @@ function assertOwnerOrStaff(property, user) {
 }
 
 export async function updateProperty(id, data, actor) {
+  data = normalizeEmptyStrings(data);
   const property = await Property.findByPk(id);
   if (!property) throw new AppError('Property not found', 404, 'NOT_FOUND');
   assertOwnerOrStaff(property, actor);

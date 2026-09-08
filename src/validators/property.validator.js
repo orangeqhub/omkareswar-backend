@@ -3,7 +3,7 @@ import { body, param } from 'express-validator';
 export const idParamValidator = [param('id').isUUID().withMessage('Invalid property id')];
 
 export const createDraftValidator = [
-  body('categorySlug').trim().notEmpty().withMessage('categorySlug is required'),
+  body('categorySlug').optional({ values: 'falsy' }).trim().notEmpty().withMessage('categorySlug is required'),
 ];
 
 export const moderateValidator = [
