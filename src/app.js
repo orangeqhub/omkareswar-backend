@@ -49,6 +49,7 @@ import appSettingsRoutes from './routes/appSettings.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import registrationFormRoutes, { adminRouter as adminRegistrationFormRoutes } from './routes/registrationForm.routes.js';
 import reportRoutes from './routes/report.routes.js';
+import { publicRouter as landingLeadPublicRoutes, adminRouter as adminLandingLeadRoutes } from './routes/landingLead.routes.js';
 import {
   adminRouter as adminDashboardRoutes,
   employeeRouter as employeeDashboardRoutes,
@@ -171,6 +172,10 @@ app.use('/api/admin/settings', appSettingsRoutes);
 // ---- Uploads & reports ----
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/admin/reports', reportRoutes);
+
+// ---- Landing page leads (public submit + admin list, separate from OTP flow) ----
+app.use('/api/landing-leads', landingLeadPublicRoutes);
+app.use('/api/admin/landing-leads', adminLandingLeadRoutes);
 
 // ---- Dashboards ----
 app.use('/api/admin/dashboard', adminDashboardRoutes);

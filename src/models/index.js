@@ -29,6 +29,7 @@ import Commission from './commission.model.js';
 import RecentlyViewedProperty from './recentlyViewedProperty.model.js';
 import RegistrationForm from './registrationForm.model.js';
 import RegistrationField from './registrationField.model.js';
+import LandingLead from './landingLead.model.js';
 
 // ---- Associations ----
 MediaRule.hasMany(MediaRuleCommonSlot, { foreignKey: 'mediaRuleId', as: 'commonSlots' });
@@ -102,4 +103,5 @@ export {
   RecentlyViewedProperty,
   RegistrationForm,
   RegistrationField,
+  LandingLead,
 };
