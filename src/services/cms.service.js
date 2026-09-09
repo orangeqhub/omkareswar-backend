@@ -17,7 +17,8 @@ export async function updateCms(data, actor) {
     'contactLandmarkEn', 'contactLandmarkTe', 'contactMapUrl',
     'businessHoursWeekdayEn', 'businessHoursWeekdayTe',
     'businessHoursSundayEn', 'businessHoursSundayTe',
-    'socialFacebook', 'socialInstagram', 'socialTwitter', 'socialYoutube'
+    'socialFacebook', 'socialInstagram', 'socialTwitter', 'socialYoutube',
+    'popupLeftImage'
   ];
 
   for (const field of editableFields) {

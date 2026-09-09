@@ -28,6 +28,7 @@ const CmsSettings = sequelize.define(
     socialInstagram: { type: DataTypes.STRING },
     socialTwitter: { type: DataTypes.STRING },
     socialYoutube: { type: DataTypes.STRING },
+    popupLeftImage: { type: DataTypes.STRING },
   },
   { tableName: 'cms_settings' }
 );

@@ -6,7 +6,7 @@ export async function create(data) {
     name: data.name,
     contact: data.contact,
     cityVillage: data.cityVillage || null,
-    role: data.role,
+    role: data.role || 'buyer',
     source: 'landing_page', // server-forced; a stamped client source is never trusted
   });
 }

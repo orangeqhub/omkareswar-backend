@@ -8,7 +8,7 @@ const LandingLead = sequelize.define(
     name: { type: DataTypes.STRING(255), allowNull: false },
     contact: { type: DataTypes.STRING(20), allowNull: false },
     cityVillage: { type: DataTypes.STRING(150) },
-    role: { type: DataTypes.STRING(20), allowNull: false }, // buyer | seller | mediator
+    role: { type: DataTypes.STRING(20), allowNull: false }, // buyer | seller | mediator | both
     source: { type: DataTypes.STRING(30), allowNull: false, defaultValue: 'landing_page' },
   },
   {
